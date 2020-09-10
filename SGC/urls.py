@@ -20,12 +20,20 @@ from django.contrib import admin
 from SGChomepage.views import indexView
 from SGClogin.views import LoginFormView, LogoutView
 
-app_name = 'SGClogin'
+
+from django.conf import settings
+from django.conf.urls.static import static
+
+app_name = 'SGClogin', 'SGChomepage'
+
 urlpatterns = [
+
+    path('', indexView.as_view(), name='index'),
     path('admin/', admin.site.urls),
     path('login/', LoginFormView.as_view(), name='LoginFormView'),
     path('logout/', LogoutView.as_view(), name='logout'),
     # path('logout/', LogoutRedirectView.as_view(), name='logout')
     path('sgcapp/', include('SGCapp.urls', namespace='SGCapp')),
-    path('', indexView.as_view()),
 ]
+
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

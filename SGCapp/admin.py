@@ -85,9 +85,17 @@ class BancoAdmin(admin.ModelAdmin):
 
 
 class ChequeAdmin(admin.ModelAdmin):
-    list_display = ('cheque_banco', 'cheque_recibo', 'numero', 'monto')
+    list_display = ('cheque_banco', 'numero', 'monto', 'imagen')
     search_fields = ('numero',)
-    list_filter = ('monto',)
+    list_filter = ('id', 'monto',)
+
+    # def formfield_for_foreignkey(self, db_field, request, **kwards):
+    #     if db_field_name == 'cheque_banco':
+    #         kwargs['queryset'] = Banco.objects.__all__.order_by('nombre')
+    #         return super(ChequeAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
+
+    # if db_field_name == 'cheque_recibo':
+    #     kwargs['queryset'] = Recibo.objects.__all__
 
 
 admin.site.register(Cobrador, CobradorAdmin)

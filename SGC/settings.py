@@ -35,15 +35,14 @@ ALLOWED_HOSTS = ['127.0.0.1', 'dardoeloy.pythonanywhere.com']
 # Application definition
 
 INSTALLED_APPS = [
-
+    # Librerias
+    'widget_tweaks',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # Librerias
-    'widget_tweaks',
     # Apps
     'SGCapp',
     'SGChomepage',
@@ -99,7 +98,7 @@ DATABASES = {
     }
 }
 
-#AUTH_USER_MODEL = 'SGCapp.User'
+# AUTH_USER_MODEL = 'SGCapp.User'
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
@@ -138,8 +137,20 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
-#STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+# STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+# LOGIN_REDIRECT_URL = 'SGCapp:ClienteListView'
+# STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 
-LOGIN_REDIRECT_URL = 'SGCapp:ClienteListView'
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
+
+LOGIN_REDIRECT_URL = 'SGCapp:dashboard'
 
 LOGOUT_REDIRECT_URL = '/login/'
+
+LOGIN_URL = '/login/'
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
+
+MEDIA_URL = '/media/'

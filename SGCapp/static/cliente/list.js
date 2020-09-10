@@ -17,9 +17,9 @@ $(function () {
             {"data": "nombre"},
             {"data": "apellido"},
             {"data": "dni"},
-            {"data": "direccion"},
-            {"data": "email"},
             {"data": "telefono"},
+            {"data": "email"},
+            {"data": "direccion"},
             {"data": "opciones"},
         ],
         columnDefs: [

@@ -1,5 +1,5 @@
-{% load static %}
 <!DOCTYPE html>
+{% load static %}
 <html lang="en">
 
 <head>
@@ -18,7 +18,7 @@
   <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Raleway:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
 
   <!-- Vendor CSS Files -->
- 
+
   <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
   <link href="{% static 'vendor/icofont/icofont.min.css' %}" rel="stylesheet">
   <link href="{% static 'vendor/boxicons/css/boxicons.min.css' %}" rel="stylesheet">
@@ -44,8 +44,8 @@
     <div class="d-flex flex-column">
 
       <div class="profile">
-        <img src="{% static 'img/profile-img.jpg' %}" alt="" class="img-fluid rounded-circle">
-        <h1 class="text-light"><a href="index.html">Alex Smith</a></h1>
+        <!-- <img src="{% static 'img/profile-img.jpg' %}" alt="" class="img-fluid rounded-circle"> -->
+        <h1 class="text-light"><a href="{% url 'index' %}">SGCapp</a></h1>
         <div class="social-links mt-3 text-center">
           <a href="#" class="twitter"><i class="bx bxl-twitter"></i></a>
           <a href="#" class="facebook"><i class="bx bxl-facebook"></i></a>
@@ -57,12 +57,13 @@
 
       <nav class="nav-menu">
         <ul>
-          <li class="active"><a href="index.html"><i class="bx bx-home"></i> <span>Home</span></a></li>
-          <li><a href="#about"><i class="bx bx-user"></i> <span>About</span></a></li>
+          <li class="active"><a href="{% url 'index' %}"><i class="bx bx-home"></i> <span>Home</span></a></li>
+          <li><a href="{% url 'LoginFormView' %}"><i class="bx bx-user"></i> <span>Login</span></a></li>
+          <li><a href="{% url 'logout' %}"><i class="bx bx-envelope"></i>Logut</a></li>
           <li><a href="{% url 'SGCapp:ClienteListView' %}"><i class="bx bx-file-blank"></i> <span>Clientes</span></a></li>
-          <li><a href="#portfolio"><i class="bx bx-book-content"></i>Cobradores</a></li>
-          <li><a href="#services"><i class="bx bx-server"></i> Bancos</a></li>
-          <li><a href="{% url 'LoginFormView' %}"><i class="bx bx-envelope"></i>Login</a></li>
+          <li><a href="{% url 'SGCapp:CobradorListView' %}"><i class="bx bx-book-content"></i>Cobradores</a></li>
+          <li><a href="{% url 'SGCapp:BancoListView' %}"><i class="bx bx-server"></i> Bancos</a></li>
+          <li><a href="{% url 'SGCapp:ChequeListView' %}"><i class="bx bx-server"></i> Cheques</a></li>
 
         </ul>
       </nav><!-- .nav-menu -->
@@ -74,8 +75,8 @@
   <!-- ======= Hero Section ======= -->
   <section id="hero" class="d-flex flex-column justify-content-center align-items-center">
     <div class="hero-container" data-aos="fade-in">
-      <h1>Alex Smith</h1>
-      <p>I'm <span class="typed" data-typed-items="Designer, Developer, Freelancer, Photographer"></span></p>
+      <h1>SGCapp</h1>
+      <p>Te posibilita <span class="typed" data-typed-items="Administrar, Controlar, Cobrar, en linea"></span></p>
     </div>
   </section><!-- End Hero -->
 
@@ -620,16 +621,24 @@
   <!-- ======= Footer ======= -->
   <footer id="footer">
     <div class="container">
-      <div class="copyright">
+        {% if request.user.is_authenticated %}
+            <a href="{% url 'SGCapp:dashboard' %}"></a>
+            Usuario autentificado <i class="fas fa-users-cog"></i> {{ request.user.username }}
+        {% else %}
+            <a href="{ url 'LoginFormView' }"></a>
+
+                <i class=" bx bx-door-open"></i> Login
+        {% endif %}
+      <!-- <div class="copyright">
         &copy; Copyright <strong><span>iPortfolio</span></strong>
-      </div>
-      <div class="credits">
+      </div> -->
+      <!-- <div class="credits"> -->
         <!-- All the links in the footer should remain intact. -->
         <!-- You can delete the links only if you purchased the pro version. -->
         <!-- Licensing information: https://bootstrapmade.com/license/ -->
         <!-- Purchase the pro version with working PHP/AJAX contact form: https://bootstrapmade.com/iportfolio-bootstrap-portfolio-websites-template/ -->
-        Designed by <a href="https://bootstrapmade.com/">BootstrapMade</a>
-      </div>
+
+      <!-- </div> -->
     </div>
   </footer><!-- End  Footer -->
 

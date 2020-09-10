@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.forms import model_to_dict
+from SGC.settings import MEDIA_URL, STATIC_URL
 
 # Create your models here.
 
@@ -163,10 +164,14 @@ class Anticipo (models.Model):
 
 
 class Banco (models.Model):
-    nombre = models.CharField(max_length=25, verbose_name='Nombre')
+    nombre = models.CharField(max_length=50, verbose_name='Nombre')
 
     def __str__(self):
-        return '{} {}'.format(self.id, self.nombre)
+        return '{}'.format(self.nombre)
+
+    def toJSON(self):
+        item = model_to_dict(self)
+        return item
 
     class Meta:
         verbose_name = 'Banco'
@@ -175,14 +180,28 @@ class Banco (models.Model):
 
 
 class Cheque (models.Model):
-    cheque_banco = models.ForeignKey(Banco, on_delete=models.CASCADE, verbose_name='Banco')
-    cheque_recibo = models.ForeignKey(Recibo, on_delete=models.CASCADE, verbose_name='Recibo')
+    cheque_banco = models.ForeignKey(
+        Banco, on_delete=models.CASCADE, verbose_name='Banco')
+    # cheque_recibo = models.ForeignKey(
+    #     Recibo, on_delete=models.CASCADE, verbose_name='Recibo', null=True, blank=True)
     numero = models.DecimalField(max_digits=10, decimal_places=0,
                                  unique=True, verbose_name='Numero Cheque')
     monto = models.DecimalField(max_digits=8, decimal_places=2, verbose_name='Monto')
+    imagen = models.ImageField(upload_to='cheque/%Y/%m/%d', null=True, blank=True)
+
+    def get_imagen(self):
+        if self.imagen:
+            return '{}{}'.format(MEDIA_URL, self.imagen)
+        else:
+            return '{}{}'.format(STATIC_URL, 'img/empty.png')
+
+    def toJSON(self):
+        item = model_to_dict(self)
+        item['imagen'] = self.get_imagen()  # Parseo el campo imagen
+        return item
 
     def __str__(self):
-        return '{} {} {}'.format(self.cheque_banco, self.numero, self.monto)
+        return '{} {} {} {}'.format(self.cheque_banco, self.numero, self.monto, self.imagen)
 
     class Meta:
         verbose_name = 'Cheque'
