@@ -5,7 +5,7 @@ from SGCapp.models import *
 '''
 @admin.register(User)
 class UserAdmin(AbstractUser):
-    list_display = ('nombre','apellido', 'dni', 'telefono', 'email', 'creado', 'actualizado')
+    list_display = ('id', 'nombre','apellido', 'dni', 'telefono', 'email', 'creado', 'actualizado')
     search_fields = ('dni',)
     list_filter = ('id',)
     date_hierarchy = 'creado'
@@ -13,7 +13,7 @@ class UserAdmin(AbstractUser):
 
 
 class CobradorAdmin(admin.ModelAdmin):
-    list_display = ('nombre', 'apellido', 'dni', 'telefono',
+    list_display = ('id', 'nombre', 'apellido', 'dni', 'telefono',
                     'email', 'direccion', 'creado', 'actualizado')
     search_fields = ('dni',)
     list_filter = ('id',)
@@ -21,7 +21,7 @@ class CobradorAdmin(admin.ModelAdmin):
 
 
 class ClienteAdmin(admin.ModelAdmin):
-    list_display = ('nombre', 'apellido', 'dni', 'telefono',
+    list_display = ('id', 'nombre', 'apellido', 'dni', 'telefono',
                     'email', 'direccion', 'creado', 'actualizado')
     search_fields = ('dni',)
     list_filter = ('id',)
@@ -30,13 +30,13 @@ class ClienteAdmin(admin.ModelAdmin):
 
 # @admin.register(Caja)
 class CajaAdmin(admin.ModelAdmin):
-    list_display = ('user_caja', 'estado', 'fecha_cierre', 'saldo_inicial', 'monto_cierre')
+    list_display = ('id', 'user_caja', 'estado', 'fecha_cierre', 'saldo_inicial', 'monto_cierre')
 
 # @admin.register(Planilla)
 
 
 class PlanillaAdmin(admin.ModelAdmin):
-    list_display = ('planilla_caja', 'planilla_cobrador', 'fecha_emision',
+    list_display = ('id', 'planilla_caja', 'planilla_cobrador', 'fecha_emision',
                     'fecha_cierre', 'monto_total', 'estado', 'cantidad_recibos')
     search_fields = ('planilla_caja', 'planilla_cobrador')
     list_filter = ('estado',)
@@ -46,7 +46,7 @@ class PlanillaAdmin(admin.ModelAdmin):
 
 
 class ComprobanteAdmin(admin.ModelAdmin):
-    list_display = ('fecha_comprobante', 'monto_original', 'monto_cancelado')
+    list_display = ('id', 'fecha_comprobante', 'monto_original', 'monto_cancelado')
     search_fields = ('monto_original', 'monto_cancelado')
     date_hierarchy = 'fecha_comprobante'
 
@@ -54,7 +54,7 @@ class ComprobanteAdmin(admin.ModelAdmin):
 
 
 class ComprobanteGeneradoAdmin(admin.ModelAdmin):
-    list_display = ('comprobante_recibo', 'comprobante_generado', 'monto')
+    list_display = ('id', 'comprobante_recibo', 'comprobante_generado', 'monto')
     search_fields = ('comprobante_generado',)
     list_filter = ('monto',)
 
@@ -62,7 +62,7 @@ class ComprobanteGeneradoAdmin(admin.ModelAdmin):
 
 
 class ReciboAdmin(admin.ModelAdmin):
-    list_display = ('recibo_planilla', 'recibo_caja', 'monto', 'fecha', 'estado',
+    list_display = ('id', 'recibo_planilla', 'recibo_caja', 'monto', 'fecha', 'estado',
                     'comprobantes_Cancelados', 'monto_comprobantes', 'medios_de_pago')
     search_fields = ('pk', 'monto')
     list_filter = ('estado',)
@@ -70,7 +70,7 @@ class ReciboAdmin(admin.ModelAdmin):
 
 
 class AnticipoAdmin(admin.ModelAdmin):
-    list_display = ('anticipo_recibo', 'anticipo_comprobante', 'monto')
+    list_display = ('id', 'anticipo_recibo', 'anticipo_comprobante', 'monto')
     search_fields = ('anticipo_comprobante',)
     list_filter = ('monto',)
 
@@ -78,14 +78,15 @@ class AnticipoAdmin(admin.ModelAdmin):
 
 
 class BancoAdmin(admin.ModelAdmin):
-    list_display = ('nombre',)
+    list_display = ('id', 'nombre',)
     search_fields = ('nombre',)
+    list_filter = ('id',)
 
 # @admin.register(Cheque)
 
 
 class ChequeAdmin(admin.ModelAdmin):
-    list_display = ('cheque_banco', 'numero', 'monto', 'imagen')
+    list_display = ('id', 'cheque_banco', 'numero', 'monto', 'imagen')
     search_fields = ('numero',)
     list_filter = ('id', 'monto',)
 

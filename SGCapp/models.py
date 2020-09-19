@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.forms import model_to_dict
 from SGC.settings import MEDIA_URL, STATIC_URL
+from django.conf import settings
 
 # Create your models here.
 
@@ -15,8 +16,8 @@ class Caja(models.Model):
         (ESTADO_CERRADO, 'Cerrada')
     )
 
-    user_caja = models.ForeignKey(User, on_delete=models.CASCADE,
-                                  verbose_name='usuario caja', related_name='+')
+    user_caja = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                                  verbose_name='usuario caja', related_name='user_caja')
     estado = models.CharField(max_length=1, choices=ESTADO_OPCIONES)
     fecha_cierre = models.DateTimeField(auto_now=True, verbose_name='fecha cierre')
     saldo_inicial = models.DecimalField(
