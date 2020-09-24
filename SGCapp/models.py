@@ -115,7 +115,7 @@ class Recibo(models.Model):
     medios_de_pago = models.CharField(max_length=10, verbose_name='Medios de Pago')
 
     def __str__(self):
-        return '{} {} {} {} {} {} {} {} {}'.format(self.pk, self.recibo_caja, self.recibo_cliente, self.monto, self.fecha, self.estado, self.comprobantes_Cancelados, self.monto_comprobantes, self.medios_de_pago)
+        return '{} {} {} {} {} {} {} {}'.format(self.recibo_caja, self.recibo_cliente, self.monto, self.fecha, self.estado, self.comprobantes_Cancelados, self.monto_comprobantes, self.medios_de_pago)
 
     class Meta:
         verbose_name = 'Recibo'
@@ -125,17 +125,17 @@ class Recibo(models.Model):
 
 class Comprobante (models.Model):
     comprobante_cliente = models.ForeignKey(
-        Cliente, on_delete=models.DO_NOTHING, null=True, blank=True, verbose_name='Cliente')
-    fecha_comprobante = models.DateTimeField(auto_now_add=True, verbose_name='Fecha Comprobante')
+        Cliente, on_delete=models.CASCADE, null=True, blank=True, verbose_name='Cliente')
+    fecha_comprobante = models.DateTimeField(auto_now_add=True, verbose_name='Fecha')
     monto_original = models.DecimalField(max_digits=8, decimal_places=2, verbose_name='Monto')
     monto_cancelado = models.DecimalField(
         max_digits=8, decimal_places=2, verbose_name='Monto Cancelado')
 
     class Meta:
-        ordering = [id]
+        ordering = ['id']
 
     def __str__(self):
-        return '{} {} {} {} {} {}'.format(self.comprobante_cliente, self.pk, self.cliente, self.fecha_comprobante, self.monto_original, self.monto_cancelado)
+        return '{} {} {} {} {}'.format(self.comprobante_cliente, self.cliente, self.fecha_comprobante, self.monto_original, self.monto_cancelado)
 
 
 class ComprobanteGenerado (models.Model):
@@ -145,23 +145,31 @@ class ComprobanteGenerado (models.Model):
     monto = models.DecimalField(max_digits=8, decimal_places=2, verbose_name='Monto')
 
     class Meta:
-        ordering = [id]
+        ordering = ['id']
 
     def __str__(self):
         return '{} {} {} {}'.format(self.pk, self.comprobante_recibo, self.comprobante_generado, self.monto)
 
 
 class Anticipo (models.Model):
-    anticipo_recibo = models.ForeignKey(Recibo, on_delete=models.CASCADE, verbose_name='Recibo')
+    anticipo_recibo = models.ForeignKey(
+        Recibo, on_delete=models.CASCADE, null=True, blank=True, verbose_name='Recibo')
     anticipo_comprobante = models.ForeignKey(
-        Comprobante, on_delete=models.CASCADE, verbose_name='Comprobante')
-    monto = models.DecimalField(max_digits=8, decimal_places=2, verbose_name='Monto')
+        Comprobante, on_delete=models.CASCADE, null=True, blank=True, verbose_name='Comprobante')
+    monto = models.DecimalField(max_digits=8, decimal_places=2,
+                                null=True, blank=True, verbose_name='Monto')
 
     class Meta:
-        ordering = [id]
+        verbose_name = 'Anticipo'
+        verbose_name_plural = 'Anticipos'
+        ordering = ['id']
+
+    def toJSON(self):
+        item = model_to_dict(self)
+        return item
 
     def __str__(self):
-        return '{} {} {} {}'.format(self.pk, self.anticipo_recibo, self.anticipo_comprobante, self.monto)
+        return '{} {} {}' .format(self.anticipo_recibo, self.anticipo_comprobante, self.monto)
 
 
 class Banco (models.Model):

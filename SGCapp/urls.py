@@ -29,6 +29,12 @@ urlpatterns = [
     path('listcheque/', views.ChequeListView.as_view(), name='ChequeListView'),
     path('addcheque/', views.ChequeCreateView.as_view(), name='ChequeCreateView'),
     path('editcheque/<int:pk>/', views.ChequeUpdateView.as_view(), name='ChequeUpdateView'),
-    path('deletecheque/<int:pk>/', views.ChequeDeleteView.as_view(), name='ChequeDeleteView')
+    path('deletecheque/<int:pk>/', views.ChequeDeleteView.as_view(), name='ChequeDeleteView'),
+
+    # urls Anticipos
+    path('listanticipo/', views.AnticipoListView.as_view(), name='AnticipoListView'),
+    path('addanticipo/', views.AnticipoCreateView.as_view(), name='AnticipoCreateView'),
+    path('editanticipo/<int:pk>/', views.AnticipoUpdateView.as_view(), name='AnticipoUpdateView'),
+    path('deleteanticipo/<int:pk>/', views.AnticipoDeleteView.as_view(), name='AnticipoDeleteView')
 
 ]

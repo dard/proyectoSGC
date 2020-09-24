@@ -5,8 +5,8 @@ from django.urls import reverse_lazy
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, FormView, TemplateView
 from django.utils.decorators import method_decorator
-from SGCapp.models import Cliente, Cobrador, Banco, Cheque
-from SGCapp.forms import ClienteForm, CobradorForm, BancoForm, ChequeForm
+from SGCapp.models import Cliente, Cobrador, Banco, Cheque, Anticipo
+from SGCapp.forms import ClienteForm, CobradorForm, BancoForm, ChequeForm, AnticipoForm
 
 # Create your views here.
 
@@ -666,5 +666,162 @@ class ChequeDeleteView(DeleteView):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Eliminar cheque'
         context['entity'] = 'Cheques'
+        context['list_url'] = self.success_url
+        return context
+
+
+#  VISTAS Anticipo --------------------------------
+
+
+class AnticipoListView (ListView):
+    model = Anticipo
+    template_name = 'SGCapp/anticipos/list.html'
+
+    @method_decorator(login_required)
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        data = {}
+        # data = Cliente.objects.get(pk=request.POST['id']).toJSON
+        # return JsonResponse(data)
+        # el siguiente codigo es para renderizar con ayax cuando son miles de
+        # filas en la tabla se utiliza con el list.js y el toJson
+        try:
+            action = request.POST['action']
+            if action == 'searchdata':
+                data = []
+                for i in Anticipo.objects.all():
+                    data.append(i.toJSON())
+            else:
+                data['error'] = 'Ha ocurrido un error'
+        except Exception as e:
+            data['error'] = str(e)
+        return JsonResponse(data, safe=False)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Listado de Anticipos'
+        context['create_url'] = reverse_lazy('SGCapp:AnticipoCreateView')
+        context['list_url'] = reverse_lazy('SGCapp:AnticipoListView')
+        context['entity'] = 'Anticipos'
+        return context
+
+
+class AnticipoCreateView(CreateView):
+    model = Anticipo
+    form_class = AnticipoForm
+    template_name = 'SGCapp/anticipos/create.html'
+    success_url = reverse_lazy('SGCapp:AnticipoListView')
+
+    @method_decorator(login_required)
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        data = {}
+        try:
+            action = request.POST['action']
+            if action == 'add':
+                form = self.get_form()
+                data = form.save()
+            else:
+                data['error'] = 'No ha ingresado a ninguna opcion'
+        except Exception as e:
+            data['error'] = str(e)
+        return JsonResponse(data)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Crear anticipo'
+        context['entity'] = 'Anticipos'
+        context['list_url'] = reverse_lazy('SGCapp:AnticipoListView')
+        context['action'] = 'add'
+        return context
+
+
+class AnticipoUpdateView(UpdateView):
+
+    model = Anticipo
+    form_class = AnticipoForm
+    template_name = 'SGCapp/anticipos/create.html'
+    success_url = reverse_lazy('SGCapp:AnticipoListView')
+
+    @method_decorator(login_required)
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        data = {}
+        print('imprimir post')
+        print(request.POST)
+        try:
+            action = request.POST['action']
+            if action == 'edit':
+                form = self.get_form()
+                data = form.save()
+            else:
+                data['error'] = 'No ha ingresado a ninguna opcion'
+        except Exception as e:
+            data['error'] = str(e)
+        return JsonResponse(data)
+
+    def get_context_data(self, **kwargs):
+        print(self.get_object())
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Editar anticipo'
+        context['entity'] = 'Anticipos'
+        context['list_url'] = reverse_lazy('SGCapp:AnticipoListView')
+        context['action'] = 'edit'
+        return context
+
+
+class AnticipoDeleteView(DeleteView):
+    model = Anticipo
+    template_name = 'SGCapp/anticipos/delete.html'
+    success_url = reverse_lazy('SGCapp:AnticipoListView')
+
+    @method_decorator(login_required)
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        data = {}
+        print('imprimir post')
+        print(request.POST)
+        try:
+            self.object.delete()
+        except Exception as e:
+            data['error'] = str(e)
+        return JsonResponse(data)
+
+        print(request.POST)
+        return HttpResponseRedirect(self.success_url)
+
+    def get_context_data(self, **kwargs):
+        print(self.success_url)
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Eliminar anticipo'
+        context['entity'] = 'Anticipos'
+        context['list_url'] = self.success_url
+        return context
+
+
+# vista form Anticipo
+class AnticipoFormView(FormView):
+    form_class = AnticipoForm
+    template_name = 'SGCapp/anticipos/create.html'
+    success_url = reverse_lazy('SGCapp:AnticipoListView')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Formulario anticipo'
+        context['entity'] = 'Anticipos'
         context['list_url'] = self.success_url
         return context

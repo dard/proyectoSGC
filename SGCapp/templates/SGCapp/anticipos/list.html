@@ -1,0 +1,26 @@
+{% extends 'SGCapp/list.html'%}
+{% load static %}
+
+{% block head_list %}
+    <script type="text/javascript" src="{% static 'anticipo/list.js' %}"></script>
+{% endblock %}
+
+{% block columns %}
+<tr>
+    <th style="width: 15%;">Nro</th>
+    <th style="width: 20%;">Anticipo_recibo</th>
+    <th style="width: 20%;">Anticipo_comprobante</th>
+    <th style="width: 20%;">Monto</th>
+    <th style="width: 15%;">Opciones</th>
+</tr>
+{% endblock %}
+
+{% block rows %}
+
+{% endblock %}
+
+{% block javascript %}
+<script type="application/javascript">
+
+</script>
+{% endblock %}
