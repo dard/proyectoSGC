@@ -5,8 +5,8 @@ from django.urls import reverse_lazy
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, FormView, TemplateView
 from django.utils.decorators import method_decorator
-from SGCapp.models import Cliente, Cobrador, Banco, Cheque, Anticipo
-from SGCapp.forms import ClienteForm, CobradorForm, BancoForm, ChequeForm, AnticipoForm
+from SGCapp.models import Cliente, Cobrador, Banco, Cheque, Anticipo, Comprobante
+from SGCapp.forms import ClienteForm, CobradorForm, BancoForm, ChequeForm, AnticipoForm, ComprobanteForm
 
 # Create your views here.
 
@@ -823,5 +823,171 @@ class AnticipoFormView(FormView):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Formulario anticipo'
         context['entity'] = 'Anticipos'
+        context['list_url'] = self.success_url
+        return context
+
+
+#  VISTAS Comprobantes --------------------------------
+
+
+class ComprobanteListView (ListView):
+    model = Comprobante
+    template_name = 'SGCapp/comprobantes/list.html'
+
+    @method_decorator(login_required)
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        data = {}
+        # data = Comprobante.objects.get(pk=request.POST['id']).toJSON
+        # return JsonResponse(data)
+        # el siguiente codigo es para renderizar con ayax cuando son miles de
+        # filas en la tabla se utiliza con el list.js y el toJson
+        try:
+            action = request.POST['action']
+            if action == 'searchdata':
+                data = []
+                for i in Comprobante.objects.all()[:]:
+                    # print(i)
+                    # print(data)
+                    comprobante = i.toJSON()
+                    # asigno el nombre del campo en el diccionario
+                    comprobante['comprobante_cliente'] = i.comprobante_cliente.dni
+                    print(comprobante)
+                    data.append(comprobante)
+                    # data.append(i.toJSON())
+                # for i in Cheque.objects.all():
+                #     data.append(i.toJSON())
+            else:
+                data['error'] = 'Ha ocurrido un error'
+        except Exception as e:
+            data['error'] = str(e)
+        return JsonResponse(data, safe=False)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Listado de Comprobantes'
+        context['create_url'] = reverse_lazy('SGCapp:ComprobanteCreateView')
+        context['list_url'] = reverse_lazy('SGCapp:ComprobanteListView')
+        context['entity'] = 'Comprobantes'
+        return context
+
+
+class ComprobanteCreateView(CreateView):
+    model = Comprobante
+    form_class = ComprobanteForm
+    template_name = 'SGCapp/comprobantes/create.html'
+    success_url = reverse_lazy('SGCapp:ComprobanteListView')
+
+    @method_decorator(login_required)
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        data = {}
+        try:
+            action = request.POST['action']
+            if action == 'add':
+                form = self.get_form()
+                data = form.save()
+            else:
+                data['error'] = 'No ha ingresado a ninguna opcion'
+        except Exception as e:
+            data['error'] = str(e)
+        return JsonResponse(data)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Crear comprobante'
+        context['entity'] = 'Comprobantes'
+        context['list_url'] = reverse_lazy('SGCapp:ComprobanteListView')
+        context['action'] = 'add'
+        return context
+
+
+class ComprobanteUpdateView(UpdateView):
+
+    model = Comprobante
+    form_class = ComprobanteForm
+    template_name = 'SGCapp/comprobantes/create.html'
+    success_url = reverse_lazy('SGCapp:ComprobanteListView')
+
+    @method_decorator(login_required)
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        data = {}
+        print('imprimir post')
+        print(request.POST)
+        try:
+            action = request.POST['action']
+            if action == 'edit':
+                form = self.get_form()
+                data = form.save()
+            else:
+                data['error'] = 'No ha ingresado a ninguna opcion'
+        except Exception as e:
+            data['error'] = str(e)
+        return JsonResponse(data)
+
+    def get_context_data(self, **kwargs):
+        print(self.get_object())
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Editar comprobante'
+        context['entity'] = 'Comprobantes'
+        context['list_url'] = reverse_lazy('SGCapp:ComprobanteListView')
+        context['action'] = 'edit'
+        return context
+
+
+class ComprobanteDeleteView(DeleteView):
+    model = Comprobante
+    template_name = 'SGCapp/comprobantes/delete.html'
+    success_url = reverse_lazy('SGCapp:ComprobanteListView')
+
+    @method_decorator(login_required)
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        data = {}
+        print('imprimir post')
+        print(request.POST)
+        try:
+            self.object.delete()
+        except Exception as e:
+            data['error'] = str(e)
+        return JsonResponse(data)
+
+        print(request.POST)
+        return HttpResponseRedirect(self.success_url)
+
+    def get_context_data(self, **kwargs):
+        print(self.success_url)
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Eliminar comprobante'
+        context['entity'] = 'Comprobantes'
+        context['list_url'] = self.success_url
+        return context
+
+
+# vista form Comprobante
+class ComprobanteFormView(FormView):
+    form_class = ComprobanteForm
+    template_name = 'SGCapp/comprobantes/create.html'
+    success_url = reverse_lazy('SGCapp:ComprobanteListView')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Formulario comprobante'
+        context['entity'] = 'Comprobantes'
         context['list_url'] = self.success_url
         return context

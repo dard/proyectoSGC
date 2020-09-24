@@ -127,15 +127,24 @@ class Comprobante (models.Model):
     comprobante_cliente = models.ForeignKey(
         Cliente, on_delete=models.CASCADE, null=True, blank=True, verbose_name='Cliente')
     fecha_comprobante = models.DateTimeField(auto_now_add=True, verbose_name='Fecha')
-    monto_original = models.DecimalField(max_digits=8, decimal_places=2, verbose_name='Monto')
+    monto_original = models.DecimalField(
+        max_digits=8, decimal_places=2, verbose_name='Monto Original')
     monto_cancelado = models.DecimalField(
         max_digits=8, decimal_places=2, verbose_name='Monto Cancelado')
 
     class Meta:
         ordering = ['id']
 
+    def toJSON(self):
+        # model_to_dict devuelve un diccionario del modelo
+        # proiedad exclude para excluir datos (self, exclude=['campoFecha']
+        item = model_to_dict(self)
+        # parseo el campo fecha
+        item['fecha_comprobante'] = self.fecha_comprobante.strftime('%y-%m-%d')
+        return item
+
     def __str__(self):
-        return '{} {} {} {} {}'.format(self.comprobante_cliente, self.cliente, self.fecha_comprobante, self.monto_original, self.monto_cancelado)
+        return '{} {} {} {}'.format(self.comprobante_cliente, self.fecha_comprobante, self.monto_original, self.monto_cancelado)
 
 
 class ComprobanteGenerado (models.Model):
@@ -146,6 +155,10 @@ class ComprobanteGenerado (models.Model):
 
     class Meta:
         ordering = ['id']
+
+    def toJSON(self):
+        item = model_to_dict(self)
+        return item
 
     def __str__(self):
         return '{} {} {} {}'.format(self.pk, self.comprobante_recibo, self.comprobante_generado, self.monto)

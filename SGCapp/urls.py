@@ -35,6 +35,12 @@ urlpatterns = [
     path('listanticipo/', views.AnticipoListView.as_view(), name='AnticipoListView'),
     path('addanticipo/', views.AnticipoCreateView.as_view(), name='AnticipoCreateView'),
     path('editanticipo/<int:pk>/', views.AnticipoUpdateView.as_view(), name='AnticipoUpdateView'),
-    path('deleteanticipo/<int:pk>/', views.AnticipoDeleteView.as_view(), name='AnticipoDeleteView')
+    path('deleteanticipo/<int:pk>/', views.AnticipoDeleteView.as_view(), name='AnticipoDeleteView'),
+
+    # urls Comprobantes
+    path('listcomprobante/', views.ComprobanteListView.as_view(), name='ComprobanteListView'),
+    path('addcomprobante/', views.ComprobanteCreateView.as_view(), name='ComprobanteCreateView'),
+    path('editcomprobante/<int:pk>/', views.ComprobanteUpdateView.as_view(), name='ComprobanteUpdateView'),
+    path('deletecomprobante/<int:pk>/', views.ComprobanteDeleteView.as_view(), name='ComprobanteDeleteView')
 
 ]

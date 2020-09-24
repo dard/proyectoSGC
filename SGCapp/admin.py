@@ -46,8 +46,9 @@ class PlanillaAdmin(admin.ModelAdmin):
 
 
 class ComprobanteAdmin(admin.ModelAdmin):
-    list_display = ('id', 'fecha_comprobante', 'monto_original', 'monto_cancelado')
-    search_fields = ('monto_original', 'monto_cancelado')
+    list_display = ('id', 'comprobante_cliente', 'fecha_comprobante',
+                    'monto_original', 'monto_cancelado')
+    search_fields = ('monto_original', 'monto_cancelado', 'comprobante_cliente')
     date_hierarchy = 'fecha_comprobante'
 
 # @admin.register(ComprobanteGenerado)
