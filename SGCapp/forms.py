@@ -206,6 +206,7 @@ class AnticipoForm (ModelForm):
             form.field.widget.attrs['class'] = 'form-control'
             form.field.widget.attrs['autocomplete'] = 'off'
         self.fields['anticipo_recibo'].widget.attrs['autofocus'] = True
+        self.fields['anticipo_comprobante'].widget.attrs['autofocus'] = False
 
     class Meta:
         model = Anticipo
@@ -255,6 +256,40 @@ class ComprobanteForm(ModelForm):
             'monto_cancelado': TextInput(
                 attrs={
                     'placeholder': 'Ingrese el monto cancelado',
+                }
+            ),
+        }
+
+    def save(self, commit=True):
+        data = {}
+        form = super()
+        try:
+            if form.is_valid():
+                form.save()
+            else:
+                data['error'] = form.errors
+        except Exception as e:
+            data['error'] = str(e)
+        return data
+
+
+class ComprobanteGeneradoForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for form in self.visible_fields():
+            form.field.widget.attrs['class'] = 'form-control'
+            form.field.widget.attrs['autocomplete'] = 'off'
+        self.fields['comprobante_recibo'].widget.attrs['autofocus'] = True
+        self.fields['comprobante_generado'].widget.attrs['autofocus'] = False
+
+    class Meta:
+        model = ComprobanteGenerado
+        fields = '__all__'
+        # permite widgets personalizar
+        widgets = {
+            'monto': TextInput(
+                attrs={
+                    'placeholder': 'Ingrese el monto',
                 }
             ),
         }

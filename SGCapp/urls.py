@@ -41,6 +41,15 @@ urlpatterns = [
     path('listcomprobante/', views.ComprobanteListView.as_view(), name='ComprobanteListView'),
     path('addcomprobante/', views.ComprobanteCreateView.as_view(), name='ComprobanteCreateView'),
     path('editcomprobante/<int:pk>/', views.ComprobanteUpdateView.as_view(), name='ComprobanteUpdateView'),
-    path('deletecomprobante/<int:pk>/', views.ComprobanteDeleteView.as_view(), name='ComprobanteDeleteView')
+    path('deletecomprobante/<int:pk>/', views.ComprobanteDeleteView.as_view(), name='ComprobanteDeleteView'),
 
+    # urls ComprobanteGenerado
+    path('listComprobanteGenerado/', views.ComprobanteGeneradoListView.as_view(),
+         name='ComprobanteGeneradoListView'),
+    path('addComprobanteGenerado/', views.ComprobanteGeneradoCreateView.as_view(),
+         name='ComprobanteGeneradoCreateView'),
+    path('editComprobanteGenerado/<int:pk>/', views.ComprobanteGeneradoUpdateView.as_view(),
+         name='ComprobanteGeneradoUpdateView'),
+    path('deleteComprobanteGenerado/<int:pk>/',
+         views.ComprobanteGeneradoDeleteView.as_view(), name='ComprobanteGeneradoDeleteView')
 ]
