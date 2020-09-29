@@ -5,8 +5,8 @@ from django.urls import reverse_lazy
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, FormView, TemplateView
 from django.utils.decorators import method_decorator
-from SGCapp.models import Cliente, Cobrador, Banco, Cheque, Anticipo, Comprobante, ComprobanteGenerado
-from SGCapp.forms import ClienteForm, CobradorForm, BancoForm, ChequeForm, AnticipoForm, ComprobanteForm, ComprobanteGeneradoForm
+from SGCapp.models import Cliente, Cobrador, Banco, Cheque, Anticipo, Comprobante, ComprobanteGenerado, Recibo
+from SGCapp.forms import ClienteForm, CobradorForm, BancoForm, ChequeForm, AnticipoForm, ComprobanteForm, ComprobanteGeneradoForm, ReciboForm
 
 # Create your views here.
 
@@ -993,6 +993,9 @@ class ComprobanteFormView(FormView):
         return context
 
 
+# VISTAS ComprobanteGenerado ----------------------------------------
+
+
 class ComprobanteGeneradoListView (ListView):
     model = ComprobanteGenerado
     template_name = 'SGCapp/ComprobantesGenerados/list.html'
@@ -1154,5 +1157,172 @@ class ComprobanteGeneradoFormView(FormView):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Formulario Comprobante Generado'
         context['entity'] = 'Comprobantes Generados'
+        context['list_url'] = self.success_url
+        return context
+
+
+# VISTAS RECIBO------------------------------------------------------
+
+class ReciboListView (ListView):
+    model = Recibo
+    template_name = 'SGCapp/recibos/list.html'
+
+    @method_decorator(login_required)
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        data = {}
+        # data = Comprobante.objects.get(pk=request.POST['id']).toJSON
+        # return JsonResponse(data)
+        # el siguiente codigo es para renderizar con ayax cuando son miles de
+        # filas en la tabla se utiliza con el list.js y el toJson
+        try:
+            action = request.POST['action']
+            if action == 'searchdata':
+                data = []
+                for i in Recibo.objects.all()[:]:
+                    # print(i)
+                    print('i')
+                    print(i)
+                    recibo = i.toJSON()
+                # asigno el nombre del campo en el diccionario
+                    recibo['recibo_cliente'] = i.recibo_cliente.dni
+                    print('recibo')
+                    print(recibo)
+                    data.append(recibo)
+                    # data.append(i.toJSON())
+                # for i in Cheque.objects.all():
+                #     data.append(i.toJSON())
+            else:
+                data['error'] = 'Ha ocurrido un error'
+        except Exception as e:
+            data['error'] = str(e)
+        return JsonResponse(data, safe=False)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Listado de Recibos'
+        context['create_url'] = reverse_lazy('SGCapp:ReciboCreateView')
+        context['list_url'] = reverse_lazy('SGCapp:ReciboListView')
+        context['entity'] = 'Recibos'
+        return context
+
+
+class ReciboCreateView(CreateView):
+    model = Recibo
+    form_class = ReciboForm
+    template_name = 'SGCapp/recibos/create.html'
+    success_url = reverse_lazy('SGCapp:ReciboListView')
+
+    @method_decorator(login_required)
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        data = {}
+        try:
+            action = request.POST['action']
+            if action == 'add':
+                form = self.get_form()
+                data = form.save()
+            else:
+                data['error'] = 'No ha ingresado a ninguna opcion'
+        except Exception as e:
+            data['error'] = str(e)
+        return JsonResponse(data)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Crear Recibo'
+        context['entity'] = 'Recibos'
+        context['list_url'] = reverse_lazy('SGCapp:ReciboListView')
+        context['action'] = 'add'
+        return context
+
+
+class ReciboUpdateView(UpdateView):
+
+    model = Recibo
+    form_class = ReciboForm
+    template_name = 'SGCapp/recibos/create.html'
+    success_url = reverse_lazy('SGCapp:ReciboListView')
+
+    @method_decorator(login_required)
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        data = {}
+        print('imprimir post')
+        print(request.POST)
+        try:
+            action = request.POST['action']
+            if action == 'edit':
+                form = self.get_form()
+                data = form.save()
+            else:
+                data['error'] = 'No ha ingresado a ninguna opcion'
+        except Exception as e:
+            data['error'] = str(e)
+        return JsonResponse(data)
+
+    def get_context_data(self, **kwargs):
+        print(self.get_object())
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Editar Recibo'
+        context['entity'] = 'Recibos'
+        context['list_url'] = reverse_lazy('SGCapp:ReciboListView')
+        context['action'] = 'edit'
+        return context
+
+
+class ReciboDeleteView(DeleteView):
+    model = Recibo
+    template_name = 'SGCapp/recibos/delete.html'
+    success_url = reverse_lazy('SGCapp:ReciboListView')
+
+    @method_decorator(login_required)
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        data = {}
+        print('imprimir post')
+        print(request.POST)
+        try:
+            self.object.delete()
+        except Exception as e:
+            data['error'] = str(e)
+        return JsonResponse(data)
+
+        print(request.POST)
+        return HttpResponseRedirect(self.success_url)
+
+    def get_context_data(self, **kwargs):
+        print(self.success_url)
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Eliminar Recibo'
+        context['entity'] = 'Recibos'
+        context['list_url'] = self.success_url
+        return context
+
+
+# vista form Recibo
+class ReciboFormView(FormView):
+    form_class = ReciboForm
+    template_name = 'SGCapp/recibos/create.html'
+    success_url = reverse_lazy('SGCapp:ReciboListView')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Formulario Recibo'
+        context['entity'] = 'Recibo'
         context['list_url'] = self.success_url
         return context

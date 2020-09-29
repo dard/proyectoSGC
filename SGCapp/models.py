@@ -86,10 +86,10 @@ class Cobrador (models.Model):
 
 
 class Planilla (models.Model):
-    planilla_caja = models.ForeignKey(Caja, on_delete=models.CASCADE, verbose_name='caja')
+    planilla_caja = models.ForeignKey(Caja, on_delete=models.CASCADE, verbose_name='Caja id')
     planilla_cobrador = models.ForeignKey(
-        Cobrador, on_delete=models.CASCADE, verbose_name='cobrador')
-    fecha_emision = models.DateTimeField(auto_now_add=True, verbose_name='fecha emision')
+        Cobrador, on_delete=models.CASCADE, verbose_name='Cobrador id')
+    fecha_emision = models.DateTimeField(auto_now_add=True, verbose_name='Fecha emision')
     fecha_cierre = models.DateTimeField(auto_now=False)
     monto_total = models.DecimalField(max_digits=8, decimal_places=2, verbose_name='Monto Total')
     estado = models.CharField(max_length=10, verbose_name='Estado')
@@ -112,11 +112,11 @@ class Planilla (models.Model):
 
 class Recibo(models.Model):
     recibo_planilla = models.ForeignKey(
-        Planilla, on_delete=models.CASCADE, null=True, blank=True, verbose_name='Planilla')
+        Planilla, on_delete=models.CASCADE, null=True, blank=True, verbose_name='Nro Planilla')
     recibo_caja = models.ForeignKey(Caja, on_delete=models.CASCADE,
-                                    null=True, blank=True, verbose_name='Caja')
+                                    null=True, blank=True, verbose_name='Nro Caja')
     recibo_cliente = models.ForeignKey(
-        Cliente, on_delete=models.CASCADE, null=True, blank=True, verbose_name='Cliente')
+        Cliente, on_delete=models.CASCADE, null=True, blank=True, verbose_name='Cliente DNI')
     monto = models.DecimalField(max_digits=8, decimal_places=2, verbose_name='Monto')
     fecha = models.DateTimeField(auto_now_add=True, verbose_name='Fecha')
     estado = models.CharField(max_length=10, verbose_name='Estado')
@@ -128,7 +128,7 @@ class Recibo(models.Model):
 
     def toJSON(self):
         item = model_to_dict(self)
-        item['fecha'] = self.fecha_comprobante.strftime('%y-%m-%d')
+        item['fecha'] = self.fecha.strftime('%y-%m-%d')
         return item
 
     def __str__(self):

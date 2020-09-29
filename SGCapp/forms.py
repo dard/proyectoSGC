@@ -305,3 +305,60 @@ class ComprobanteGeneradoForm(ModelForm):
         except Exception as e:
             data['error'] = str(e)
         return data
+
+# formulario Recibo
+
+
+class ReciboForm (ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for form in self.visible_fields():
+            form.field.widget.attrs['class'] = 'form-control'
+            form.field.widget.attrs['autocomplete'] = 'off'
+        self.fields['recibo_planilla'].widget.attrs['autofocus'] = True
+        self.fields['recibo_caja'].widget.attrs['autofocus'] = False
+        self.fields['recibo_cliente'].widget.attrs['autofocus'] = False
+
+    class Meta:
+        model = Recibo
+        fields = '__all__'
+        # permite widgets personalizar
+        widgets = {
+            'monto': TextInput(
+                attrs={
+                    'placeholder': 'Ingrese un monto',
+                }
+            ),
+            'estado': TextInput(
+                attrs={
+                    'placeholder': 'Ingrese un estado',
+                }
+            ),
+            'comprobantes_Cancelados': TextInput(
+                attrs={
+                    'placeholder': 'Ingrese comprobantes cancelados',
+                }
+            ),
+            'monto_comprobantes': TextInput(
+                attrs={
+                    'placeholder': 'Ingrese monto comprobantes',
+                }
+            ),
+            'medios_de_pago': TextInput(
+                attrs={
+                    'placeholder': 'Ingrese medios de pago',
+                }
+            ),
+        }
+
+    def save(self, commit=True):
+        data = {}
+        form = super()
+        try:
+            if form.is_valid():
+                form.save()
+            else:
+                data['error'] = form.errors
+        except Exception as e:
+            data['error'] = str(e)
+        return data
