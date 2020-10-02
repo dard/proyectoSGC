@@ -23,7 +23,7 @@
                        class="nav-link dropdown-toggle"><i class="fas fa-folder-open"></i> Mantenimientos</a>
                     <ul aria-labelledby="dropdownSubMenu1" class="dropdown-menu border-0 shadow">
                         <li><a href="{% url 'SGCapp:CajaListView' %}" class="dropdown-item"><i class="fas fa-cash-register"></i> Cajas</a></li>
-                        <li><a href="#" class="dropdown-item"><i class="fas fa-file-excel"></i> Planillas</a></li>
+                        <li><a href="{% url 'SGCapp:PlanillaListView'%}" class="dropdown-item"><i class="fas fa-file-excel"></i> Planillas</a></li>
                         <li><a href="{% url 'SGCapp:ReciboListView' %}" class="dropdown-item"><i class="fas fa-ticket-alt"></i> Recibos</a></li>
                         <li><a href="{% url 'SGCapp:ComprobanteListView' %}" class="dropdown-item"><i class="fas fa-receipt"></i> Comprobantes</a></li>
                         <li><a href="{% url 'SGCapp:ComprobanteGeneradoListView' %}" class="dropdown-item"><i class="fas fa-redo"></i> Comprobantes Generados</a></li>

@@ -74,4 +74,14 @@ urlpatterns = [
     path('deleteCaja/<int:pk>/',
          views.CajaDeleteView.as_view(), name='CajaDeleteView'),
 
+    # urls Planilla
+    path('listPlanilla/', views.PlanillaListView.as_view(),
+         name='PlanillaListView'),
+    path('addPlanilla/', views.PlanillaCreateView.as_view(),
+         name='PlanillaCreateView'),
+    path('editPlanilla/<int:pk>/', views.PlanillaUpdateView.as_view(),
+         name='PlanillaUpdateView'),
+    path('deletePlanilla/<int:pk>/',
+         views.PlanillaDeleteView.as_view(), name='PlanillaDeleteView'),
+
 ]

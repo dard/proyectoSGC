@@ -18,7 +18,7 @@ class Caja(models.Model):
 
     user_caja = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True,
                                   verbose_name='usuario caja', related_name='User_caja')
-    estado = models.CharField(max_length=8, choices=ESTADO_OPCIONES)
+    estado = models.CharField(max_length=1, choices=ESTADO_OPCIONES)
     fecha_cierre = models.DateTimeField(auto_now=True, verbose_name='Fecha cierre')
     saldo_inicial = models.DecimalField(
         max_digits=8, decimal_places=2, verbose_name='Saldo inicial')
@@ -87,13 +87,20 @@ class Cobrador (models.Model):
 
 
 class Planilla (models.Model):
+    ESTADO_ABIERTO = 'A'
+    ESTADO_CERRADO = 'C'
+
+    ESTADO_OPCIONES = (
+        (ESTADO_ABIERTO, 'Abierta'),
+        (ESTADO_CERRADO, 'Cerrada')
+    )
     planilla_caja = models.ForeignKey(Caja, on_delete=models.CASCADE, verbose_name='Caja id')
     planilla_cobrador = models.ForeignKey(
         Cobrador, on_delete=models.CASCADE, verbose_name='Cobrador id')
     fecha_emision = models.DateTimeField(auto_now_add=True, verbose_name='Fecha emision')
-    fecha_cierre = models.DateTimeField(auto_now=False)
+    fecha_cierre = models.DateTimeField(auto_now=True)
     monto_total = models.DecimalField(max_digits=8, decimal_places=2, verbose_name='Monto Total')
-    estado = models.CharField(max_length=10, verbose_name='Estado')
+    estado = models.CharField(max_length=1, choices=ESTADO_OPCIONES)
     cantidad_recibos = models.IntegerField(verbose_name='Cantidad de Recibos')
 
     def toJSON(self):

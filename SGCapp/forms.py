@@ -398,3 +398,45 @@ class CajaForm(ModelForm):
         except Exception as e:
             data['error'] = str(e)
         return data
+
+
+# formulario Planilla---------------
+class PlanillaForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for form in self.visible_fields():
+            form.field.widget.attrs['class'] = 'form-control'
+            form.field.widget.attrs['autocomplete'] = 'off'
+        self.fields['planilla_caja'].widget.attrs['autofocus'] = True
+        self.fields['planilla_cobrador'].widget.attrs['autofocus'] = False
+        self.fields['estado'].widget.attrs['autofocus'] = False
+
+    class Meta:
+        model = Planilla
+        fields = '__all__'
+        # permite widgets personalizar
+        widgets = {
+            'monto_total': TextInput(
+                attrs={
+                    'placeholder': 'Ingrese el monto',
+                }
+            ),
+
+            'cantidad_recibos': TextInput(
+                attrs={
+                    'placeholder': 'Ingrese la cantidad de recibos',
+                }
+            ),
+        }
+
+    def save(self, commit=True):
+        data = {}
+        form = super()
+        try:
+            if form.is_valid():
+                form.save()
+            else:
+                data['error'] = form.errors
+        except Exception as e:
+            data['error'] = str(e)
+        return data

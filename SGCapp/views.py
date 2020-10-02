@@ -7,7 +7,7 @@ from django.views.generic import ListView, CreateView, UpdateView, DeleteView, F
 from django.utils.decorators import method_decorator
 from SGCapp.models import Cliente, Cobrador, Banco, Cheque, Anticipo, Comprobante, ComprobanteGenerado, Recibo, Caja, Planilla
 from SGCuser.models import User
-from SGCapp.forms import ClienteForm, CobradorForm, BancoForm, ChequeForm, AnticipoForm, ComprobanteForm, ComprobanteGeneradoForm, ReciboForm, CajaForm
+from SGCapp.forms import ClienteForm, CobradorForm, BancoForm, ChequeForm, AnticipoForm, ComprobanteForm, ComprobanteGeneradoForm, ReciboForm, CajaForm, PlanillaForm
 
 # Create your views here.
 
@@ -1375,7 +1375,7 @@ class CajaListView (ListView):
         print(reverse_lazy('SGCapp:CajaListView'))
         return context
 
-# cheque form
+# caja form
 
 
 class CajaFormView(FormView):
@@ -1487,5 +1487,167 @@ class CajaDeleteView(DeleteView):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Eliminar caja'
         context['entity'] = 'Caja'
+        context['list_url'] = self.success_url
+        return context
+
+
+# vista planilla--------------------------------
+class PlanillaListView (ListView):
+    model = Planilla
+    template_name = 'SGCapp/planillas/list.html'
+
+    @method_decorator(login_required)
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        data = {}
+        print('imprimir post')
+        print(request.POST)
+        # print(request.FILE)
+
+        try:
+            action = request.POST['action']
+            if action == 'searchdata':
+                data = []
+                for i in Planilla.objects.all()[:]:
+                    # print(i)
+                    # print(data)
+                    planilla = i.toJSON()
+                    # asigno el nombre del campo en el diccionario
+                    planilla['planilla_cobrador'] = i.planilla_cobrador.nombre
+                    print(planilla)
+                    data.append(planilla)
+                    # data.append(i.toJSON())
+                # for i in Cheque.objects.all():
+                #     data.append(i.toJSON())
+            else:
+                data['error'] = 'Ha ocurrido un error'
+        except Exception as e:
+            data['error'] = str(e)
+        return JsonResponse(data, safe=False)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Listado de Planillas'
+        context['create_url'] = reverse_lazy('SGCapp:PlanillaCreateView')
+        context['list_url'] = reverse_lazy('SGCapp:PlanillaListView')
+        context['entity'] = 'Planillas'
+        print(reverse_lazy('SGCapp:PlanillaListView'))
+        return context
+
+# Planillas form
+
+
+class PlanillaFormView(FormView):
+    form_class = CajaForm
+    template_name = 'SGCapp/planilas/create.html'
+    success_url = reverse_lazy('SGCapp:PlanillaListView')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Formulario planilla'
+        context['entity'] = 'Planillas'
+        context['list_url'] = self.success_url
+        return context
+
+
+class PlanillaCreateView(CreateView):
+    model = Planilla
+    form_class = PlanillaForm
+    template_name = 'SGCapp/planillas/create.html'
+    success_url = reverse_lazy('SGCapp:PlanillaListView')
+
+    @method_decorator(login_required)
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        data = {}
+        try:
+            action = request.POST['action']
+            if action == 'add':
+                form = self.get_form()
+                data = form.save()
+            else:
+                data['error'] = 'No ha ingresado a ninguna opcion'
+        except Exception as e:
+            data['error'] = str(e)
+        return JsonResponse(data)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Crear planilla'
+        context['entity'] = 'Planillas'
+        context['list_url'] = reverse_lazy('SGCapp:PlanillaListView')
+        context['action'] = 'add'
+        return context
+
+
+class PlanillaUpdateView(UpdateView):
+
+    model = Planilla
+    form_class = PlanillaForm
+    template_name = 'SGCapp/planillas/create.html'
+    success_url = reverse_lazy('SGCapp:PlanillaListView')
+
+    @method_decorator(login_required)
+    def dispatch(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        data = {}
+        print('imprimir post')
+        print(request.POST)
+        try:
+            action = request.POST['action']
+            if action == 'edit':
+                form = self.get_form()
+                data = form.save()
+            else:
+                data['error'] = 'No ha ingresado a ninguna opcion'
+        except Exception as e:
+            data['error'] = str(e)
+        return JsonResponse(data)
+
+    def get_context_data(self, **kwargs):
+        print(self.get_object())
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Editar planillas'
+        context['entity'] = 'Planillas'
+        context['list_url'] = reverse_lazy('SGCapp:PlanillaListView')
+        context['action'] = 'edit'
+        return context
+
+
+class PlanillaDeleteView(DeleteView):
+    model = Planilla
+    template_name = 'SGCapp/planillas/delete.html'
+    success_url = reverse_lazy('SGCapp:PlanillaListView')
+
+    @method_decorator(login_required)
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        data = {}
+        try:
+            self.object.delete()
+        except Exception as e:
+            data['error'] = str(e)
+        return JsonResponse(data)
+
+        print(request.POST)
+        return HttpResponseRedirect(self.success_url)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Eliminar planilla'
+        context['entity'] = 'Planillas'
         context['list_url'] = self.success_url
         return context
