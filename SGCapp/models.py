@@ -110,6 +110,52 @@ class Planilla (models.Model):
         ordering = ['id']
 
 
+class Banco (models.Model):
+    nombre = models.CharField(max_length=50, verbose_name='Nombre')
+
+    def __str__(self):
+        return '{}'.format(self.nombre)
+
+    def toJSON(self):
+        item = model_to_dict(self)
+        return item
+
+    class Meta:
+        verbose_name = 'Banco'
+        verbose_name_plural = 'Bancos'
+        ordering = ['id']
+
+
+class Cheque (models.Model):
+    cheque_banco = models.ForeignKey(
+        Banco, on_delete=models.CASCADE, verbose_name='Banco')
+    # cheque_recibo = models.ForeignKey(
+    #     Recibo, on_delete=models.CASCADE, verbose_name='Recibo', null=True, blank=True)
+    numero = models.DecimalField(max_digits=10, decimal_places=0,
+                                 unique=True, verbose_name='Numero Cheque')
+    monto = models.DecimalField(max_digits=8, decimal_places=2, verbose_name='Monto')
+    imagen = models.ImageField(upload_to='cheque/%Y/%m/%d', null=True, blank=True)
+
+    def get_imagen(self):
+        if self.imagen:
+            return '{}{}'.format(MEDIA_URL, self.imagen)
+        else:
+            return '{}{}'.format(STATIC_URL, 'img/empty.png')
+
+    def toJSON(self):
+        item = model_to_dict(self)
+        item['imagen'] = self.get_imagen()  # Parseo el campo imagen
+        return item
+
+    def __str__(self):
+        return '{} {} {} {}'.format(self.cheque_banco, self.numero, self.monto, self.imagen)
+
+    class Meta:
+        verbose_name = 'Cheque'
+        verbose_name_plural = 'Cheques'
+        ordering = ['id']
+
+
 class Recibo(models.Model):
     recibo_planilla = models.ForeignKey(
         Planilla, on_delete=models.CASCADE, null=True, blank=True, verbose_name='Nro Planilla')
@@ -124,7 +170,8 @@ class Recibo(models.Model):
         max_length=10, verbose_name='Comprobantes Cancelados')
     monto_comprobantes = models.DecimalField(
         max_digits=8, decimal_places=2, verbose_name='Monto Comprobantes')
-    medios_de_pago = models.CharField(max_length=10, verbose_name='Medios de Pago')
+    cheque = models.ForeignKey(Cheque, on_delete=models.CASCADE, null=True,
+                               blank=True, verbose_name='Nro Cheque')
 
     def toJSON(self):
         item = model_to_dict(self)
@@ -132,7 +179,7 @@ class Recibo(models.Model):
         return item
 
     def __str__(self):
-        return '{} {} {} {} {} {} {} {}'.format(self.recibo_caja, self.recibo_cliente, self.monto, self.fecha, self.estado, self.comprobantes_Cancelados, self.monto_comprobantes, self.medios_de_pago)
+        return '{} {} {} {} {} {} {} {}'.format(self.recibo_caja, self.recibo_cliente, self.monto, self.fecha, self.estado, self.comprobantes_Cancelados, self.monto_comprobantes, self.cheque)
 
     class Meta:
         verbose_name = 'Recibo'
@@ -201,49 +248,3 @@ class Anticipo (models.Model):
 
     def __str__(self):
         return '{} {} {}' .format(self.anticipo_recibo, self.anticipo_comprobante, self.monto)
-
-
-class Banco (models.Model):
-    nombre = models.CharField(max_length=50, verbose_name='Nombre')
-
-    def __str__(self):
-        return '{}'.format(self.nombre)
-
-    def toJSON(self):
-        item = model_to_dict(self)
-        return item
-
-    class Meta:
-        verbose_name = 'Banco'
-        verbose_name_plural = 'Bancos'
-        ordering = ['id']
-
-
-class Cheque (models.Model):
-    cheque_banco = models.ForeignKey(
-        Banco, on_delete=models.CASCADE, verbose_name='Banco')
-    # cheque_recibo = models.ForeignKey(
-    #     Recibo, on_delete=models.CASCADE, verbose_name='Recibo', null=True, blank=True)
-    numero = models.DecimalField(max_digits=10, decimal_places=0,
-                                 unique=True, verbose_name='Numero Cheque')
-    monto = models.DecimalField(max_digits=8, decimal_places=2, verbose_name='Monto')
-    imagen = models.ImageField(upload_to='cheque/%Y/%m/%d', null=True, blank=True)
-
-    def get_imagen(self):
-        if self.imagen:
-            return '{}{}'.format(MEDIA_URL, self.imagen)
-        else:
-            return '{}{}'.format(STATIC_URL, 'img/empty.png')
-
-    def toJSON(self):
-        item = model_to_dict(self)
-        item['imagen'] = self.get_imagen()  # Parseo el campo imagen
-        return item
-
-    def __str__(self):
-        return '{} {} {} {}'.format(self.cheque_banco, self.numero, self.monto, self.imagen)
-
-    class Meta:
-        verbose_name = 'Cheque'
-        verbose_name_plural = 'Cheques'
-        ordering = ['id']

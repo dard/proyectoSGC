@@ -64,7 +64,7 @@ class ComprobanteGeneradoAdmin(admin.ModelAdmin):
 
 class ReciboAdmin(admin.ModelAdmin):
     list_display = ('id', 'recibo_planilla', 'recibo_caja', 'monto', 'fecha', 'estado',
-                    'comprobantes_Cancelados', 'monto_comprobantes', 'medios_de_pago')
+                    'comprobantes_Cancelados', 'monto_comprobantes', 'cheque')
     search_fields = ('monto',)
     list_filter = ('estado',)
     date_hierarchy = 'fecha'

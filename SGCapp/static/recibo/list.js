@@ -20,9 +20,10 @@ $(function () {
             {"data": "recibo_cliente"},
             {"data": "monto"},
             {"data": "fecha"},
+            {"data": "estado"},
             {"data": "comprobantes_Cancelados"},
             {"data": "monto_comprobantes"},
-            {"data": "medios_de_pago"},
+            {"data": "cheque"},
             {"data": "opciones"},
         ],
 

@@ -318,6 +318,7 @@ class ReciboForm (ModelForm):
         self.fields['recibo_planilla'].widget.attrs['autofocus'] = True
         self.fields['recibo_caja'].widget.attrs['autofocus'] = False
         self.fields['recibo_cliente'].widget.attrs['autofocus'] = False
+        self.fields['cheque'].widget.attrs['autofocus'] = False
 
     class Meta:
         model = Recibo
@@ -342,11 +343,6 @@ class ReciboForm (ModelForm):
             'monto_comprobantes': TextInput(
                 attrs={
                     'placeholder': 'Ingrese monto comprobantes',
-                }
-            ),
-            'medios_de_pago': TextInput(
-                attrs={
-                    'placeholder': 'Ingrese medios de pago',
                 }
             ),
         }
