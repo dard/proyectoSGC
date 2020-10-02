@@ -62,4 +62,16 @@ urlpatterns = [
          name='ReciboUpdateView'),
     path('deleteRecibo/<int:pk>/',
          views.ReciboDeleteView.as_view(), name='ReciboDeleteView'),
+
+
+    # urls Caja
+    path('listCaja/', views.CajaListView.as_view(),
+         name='CajaListView'),
+    path('addCaja/', views.CajaCreateView.as_view(),
+         name='CajaCreateView'),
+    path('editCaja/<int:pk>/', views.CajaUpdateView.as_view(),
+         name='CajaUpdateView'),
+    path('deleteCaja/<int:pk>/',
+         views.CajaDeleteView.as_view(), name='CajaDeleteView'),
+
 ]

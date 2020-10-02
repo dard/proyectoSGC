@@ -358,3 +358,43 @@ class ReciboForm (ModelForm):
         except Exception as e:
             data['error'] = str(e)
         return data
+
+
+# formulario Caja---------------
+class CajaForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for form in self.visible_fields():
+            form.field.widget.attrs['class'] = 'form-control'
+            form.field.widget.attrs['autocomplete'] = 'off'
+        self.fields['user_caja'].widget.attrs['autofocus'] = True
+        self.fields['estado'].widget.attrs['autofocus'] = False
+
+    class Meta:
+        model = Caja
+        fields = '__all__'
+        # permite widgets personalizar
+        widgets = {
+            'saldo_inicial': TextInput(
+                attrs={
+                    'placeholder': 'Ingrese el saldo inicial',
+                }
+            ),
+            'monto_cierre': TextInput(
+                attrs={
+                    'placeholder': 'Ingrese el saldo de cierre',
+                }
+            ),
+        }
+
+    def save(self, commit=True):
+        data = {}
+        form = super()
+        try:
+            if form.is_valid():
+                form.save()
+            else:
+                data['error'] = form.errors
+        except Exception as e:
+            data['error'] = str(e)
+        return data

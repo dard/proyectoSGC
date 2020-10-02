@@ -17,19 +17,20 @@ class Caja(models.Model):
     )
 
     user_caja = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True,
-                                  verbose_name='usuario caja', related_name='user_caja')
-    estado = models.CharField(max_length=1, choices=ESTADO_OPCIONES)
-    fecha_cierre = models.DateTimeField(auto_now=True, verbose_name='fecha cierre')
+                                  verbose_name='usuario caja', related_name='User_caja')
+    estado = models.CharField(max_length=8, choices=ESTADO_OPCIONES)
+    fecha_cierre = models.DateTimeField(auto_now=True, verbose_name='Fecha cierre')
     saldo_inicial = models.DecimalField(
-        max_digits=8, decimal_places=2, verbose_name='saldo inicial')
-    monto_cierre = models.DecimalField(max_digits=8, decimal_places=2, verbose_name='monto cierre')
+        max_digits=8, decimal_places=2, verbose_name='Saldo inicial')
+    monto_cierre = models.DecimalField(max_digits=8, decimal_places=2, verbose_name='Monto cierre')
 
     def toJSON(self):
         item = model_to_dict(self)
+        item['fecha_cierre'] = self.fecha_cierre.strftime('%y-%m-%d')
         return item
 
     def __str__(self):
-        return '{} {} {} {} {}'.format(self.user_caja, -self.estado, self.fecha_cierre, self.saldo_inicial, self.monto_cierre)
+        return '{} {} {} {} {}'.format(self.user_caja, self.estado, self.fecha_cierre, self.saldo_inicial, self.monto_cierre)
 
     class Meta:
         ordering = ['id']

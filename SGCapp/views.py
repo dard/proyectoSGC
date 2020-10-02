@@ -5,8 +5,9 @@ from django.urls import reverse_lazy
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, FormView, TemplateView
 from django.utils.decorators import method_decorator
-from SGCapp.models import Cliente, Cobrador, Banco, Cheque, Anticipo, Comprobante, ComprobanteGenerado, Recibo
-from SGCapp.forms import ClienteForm, CobradorForm, BancoForm, ChequeForm, AnticipoForm, ComprobanteForm, ComprobanteGeneradoForm, ReciboForm
+from SGCapp.models import Cliente, Cobrador, Banco, Cheque, Anticipo, Comprobante, ComprobanteGenerado, Recibo, Caja, Planilla
+from SGCuser.models import User
+from SGCapp.forms import ClienteForm, CobradorForm, BancoForm, ChequeForm, AnticipoForm, ComprobanteForm, ComprobanteGeneradoForm, ReciboForm, CajaForm
 
 # Create your views here.
 
@@ -1324,5 +1325,167 @@ class ReciboFormView(FormView):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Formulario Recibo'
         context['entity'] = 'Recibo'
+        context['list_url'] = self.success_url
+        return context
+
+
+# vista Caja--------------------------------
+class CajaListView (ListView):
+    model = Caja
+    template_name = 'SGCapp/cajas/list.html'
+
+    @method_decorator(login_required)
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        data = {}
+        print('imprimir post')
+        print(request.POST)
+        # print(request.FILE)
+
+        try:
+            action = request.POST['action']
+            if action == 'searchdata':
+                data = []
+                for i in Caja.objects.all()[:]:
+                    # print(i)
+                    # print(data)
+                    caja = i.toJSON()
+                    # asigno el nombre del campo en el diccionario
+                    caja['user_caja'] = i.user_caja.username
+                    print(caja)
+                    data.append(caja)
+                    # data.append(i.toJSON())
+                # for i in Cheque.objects.all():
+                #     data.append(i.toJSON())
+            else:
+                data['error'] = 'Ha ocurrido un error'
+        except Exception as e:
+            data['error'] = str(e)
+        return JsonResponse(data, safe=False)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Listado de Cajas'
+        context['create_url'] = reverse_lazy('SGCapp:CajaCreateView')
+        context['list_url'] = reverse_lazy('SGCapp:CajaListView')
+        context['entity'] = 'Cajas'
+        print(reverse_lazy('SGCapp:CajaListView'))
+        return context
+
+# cheque form
+
+
+class CajaFormView(FormView):
+    form_class = CajaForm
+    template_name = 'SGCapp/cajas/create.html'
+    success_url = reverse_lazy('SGCapp:CajaListView')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Formulario caja'
+        context['entity'] = 'Cajas'
+        context['list_url'] = self.success_url
+        return context
+
+
+class CajaCreateView(CreateView):
+    model = Caja
+    form_class = CajaForm
+    template_name = 'SGCapp/cajas/create.html'
+    success_url = reverse_lazy('SGCapp:CajaListView')
+
+    @method_decorator(login_required)
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        data = {}
+        try:
+            action = request.POST['action']
+            if action == 'add':
+                form = self.get_form()
+                data = form.save()
+            else:
+                data['error'] = 'No ha ingresado a ninguna opcion'
+        except Exception as e:
+            data['error'] = str(e)
+        return JsonResponse(data)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Crear caja'
+        context['entity'] = 'Cajas'
+        context['list_url'] = reverse_lazy('SGCapp:CajaListView')
+        context['action'] = 'add'
+        return context
+
+
+class CajaUpdateView(UpdateView):
+
+    model = Caja
+    form_class = CajaForm
+    template_name = 'SGCapp/cajas/create.html'
+    success_url = reverse_lazy('SGCapp:CajaListView')
+
+    @method_decorator(login_required)
+    def dispatch(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        data = {}
+        print('imprimir post')
+        print(request.POST)
+        try:
+            action = request.POST['action']
+            if action == 'edit':
+                form = self.get_form()
+                data = form.save()
+            else:
+                data['error'] = 'No ha ingresado a ninguna opcion'
+        except Exception as e:
+            data['error'] = str(e)
+        return JsonResponse(data)
+
+    def get_context_data(self, **kwargs):
+        print(self.get_object())
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Editar cajas'
+        context['entity'] = 'Cajas'
+        context['list_url'] = reverse_lazy('SGCapp:CajaListView')
+        context['action'] = 'edit'
+        return context
+
+
+class CajaDeleteView(DeleteView):
+    model = Caja
+    template_name = 'SGCapp/cajas/delete.html'
+    success_url = reverse_lazy('SGCapp:CajaListView')
+
+    @method_decorator(login_required)
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        data = {}
+        try:
+            self.object.delete()
+        except Exception as e:
+            data['error'] = str(e)
+        return JsonResponse(data)
+
+        print(request.POST)
+        return HttpResponseRedirect(self.success_url)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Eliminar caja'
+        context['entity'] = 'Caja'
         context['list_url'] = self.success_url
         return context
