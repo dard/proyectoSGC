@@ -1,9 +1,9 @@
 from django.db import models
-from django.contrib.auth.models import User
 from django.forms import model_to_dict
 from SGC.settings import MEDIA_URL, STATIC_URL
 from django.conf import settings
-
+from crum import get_current_user
+from SGCuser.models import BaseModel
 # Create your models here.
 
 
@@ -118,7 +118,7 @@ class Planilla (models.Model):
         ordering = ['id']
 
 
-class Banco (models.Model):
+class Banco (BaseModel):
     nombre = models.CharField(max_length=50, verbose_name='Nombre')
 
     def __str__(self):
@@ -127,6 +127,16 @@ class Banco (models.Model):
     def toJSON(self):
         item = model_to_dict(self)
         return item
+
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        user = get_current_user()
+        if user is not None:
+            if not self.pk:
+                self.user_creation = user
+            else:
+                self.user_update = user
+
+        super(Banco, self).save()
 
     class Meta:
         verbose_name = 'Banco'

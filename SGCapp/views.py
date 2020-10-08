@@ -258,6 +258,7 @@ class CobradorCreateView(CreateView):
         data = {}
         try:
             action = request.POST['action']
+            print(request.POST)
             if action == 'add':
                 form = self.get_form()
                 data = form.save()
@@ -266,16 +267,6 @@ class CobradorCreateView(CreateView):
         except Exception as e:
             data['error'] = str(e)
         return JsonResponse(data)
-
-        #  print(request.POST)
-        #  form = ClienteForm(request.POST)
-        #  if form.is_valid():
-        #      form.save()
-        #      return HttpResponseRedirect(self.success_url)
-        #  self.object = None
-        #  context = self.get_context_data(**kwargs)
-        #  context['form'] = form
-        #  return render(request, self.template_name, context)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -373,8 +364,13 @@ class BancoListView (ListView):
         try:
             action = request.POST['action']
             if action == 'searchdata':
+                print(request.POST)
                 data = []
                 for i in Banco.objects.all():
+                    print('data')
+                    print(data)
+                    print('i')
+                    print(i)
                     data.append(i.toJSON())
             else:
                 data['error'] = 'Ha ocurrido un error'
@@ -422,6 +418,7 @@ class BancoCreateView(CreateView):
         data = {}
         try:
             action = request.POST['action']
+            print(request.POST)
             if action == 'add':
                 form = self.get_form()
                 data = form.save()

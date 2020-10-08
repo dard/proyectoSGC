@@ -141,8 +141,8 @@ class BancoForm (ModelForm):
                     'placeholder': 'Ingrese un Nombre',
                 }
             ),
-
         }
+        exclude = ['user_creation', 'user_update']
 
     def save(self, commit=True):
         data = {}
