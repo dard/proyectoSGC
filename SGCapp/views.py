@@ -1500,7 +1500,7 @@ class PlanillaListView (ListView):
 
     def post(self, request, *args, **kwargs):
         data = {}
-        print('imprimir post')
+        print('imprimir post planilla')
         print(request.POST)
         # print(request.FILE)
 
@@ -1509,16 +1509,14 @@ class PlanillaListView (ListView):
             if action == 'searchdata':
                 data = []
                 for i in Planilla.objects.all()[:]:
-                    # print(i)
-                    # print(data)
+                    print(i)
+                    print(data)
                     planilla = i.toJSON()
                     # asigno el nombre del campo en el diccionario
                     planilla['planilla_cobrador'] = i.planilla_cobrador.nombre
                     print(planilla)
                     data.append(planilla)
-                    # data.append(i.toJSON())
-                # for i in Cheque.objects.all():
-                #     data.append(i.toJSON())
+
             else:
                 data['error'] = 'Ha ocurrido un error'
         except Exception as e:

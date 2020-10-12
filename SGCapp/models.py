@@ -26,7 +26,10 @@ class Caja(models.Model):
 
     def toJSON(self):
         item = model_to_dict(self)
-        item['fecha_cierre'] = self.fecha_cierre.strftime('%y-%m-%d')
+        if item['estado'] == 'C':
+            item['fecha_cierre'] = self.fecha_cierre.strftime('%y-%m-%d')
+        else:
+            item['fecha_cierre'] = None
         return item
 
     def __str__(self):
@@ -97,16 +100,19 @@ class Planilla (models.Model):
     planilla_caja = models.ForeignKey(Caja, on_delete=models.CASCADE, verbose_name='Caja id')
     planilla_cobrador = models.ForeignKey(
         Cobrador, on_delete=models.CASCADE, verbose_name='Cobrador id')
+    estado = models.CharField(max_length=1, choices=ESTADO_OPCIONES)
     fecha_emision = models.DateTimeField(auto_now_add=True, verbose_name='Fecha emision')
     fecha_cierre = models.DateTimeField(auto_now=True)
     monto_total = models.DecimalField(max_digits=8, decimal_places=2, verbose_name='Monto Total')
-    estado = models.CharField(max_length=1, choices=ESTADO_OPCIONES)
     cantidad_recibos = models.IntegerField(verbose_name='Cantidad de Recibos')
 
     def toJSON(self):
         item = model_to_dict(self)
         item['fecha_emision'] = self.fecha_emision.strftime('%y-%m-%d')
-        item['fecha_cierre'] = self.fecha_cierre.strftime('%y-%m-%d')
+        if item['estado'] == 'C':
+            item['fecha_cierre'] = self.fecha_cierre.strftime('%y-%m-%d')
+        else:
+            item['fecha_cierre'] = None
         return item
 
     def __str__(self):
