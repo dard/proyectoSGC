@@ -1514,6 +1514,10 @@ class PlanillaListView (ListView):
                     planilla = i.toJSON()
                     # asigno el nombre del campo en el diccionario
                     planilla['planilla_cobrador'] = i.planilla_cobrador.nombre
+                    # if planilla['estado'] == 'C':
+                    #     planilla['fecha_cierre'] = i.fecha_cierre.strftime('%y-%m-%d')
+                    # else:
+                    #     planilla['fecha_cierre'] = None
                     print(planilla)
                     data.append(planilla)
 
@@ -1565,6 +1569,19 @@ class PlanillaCreateView(CreateView):
             action = request.POST['action']
             if action == 'add':
                 form = self.get_form()
+                data = []
+                # for i in Planilla.objects.all()[:]:
+                #     print(i)
+                #     print(data)
+                #     planilla = i.toJSON()
+                #     # asigno el nombre del campo en el diccionario
+                #     planilla['planilla_cobrador'] = i.planilla_cobrador.nombre
+                #     if planilla['estado'] == 'C':
+                #         planilla['fecha_cierre'] = i.fecha_cierre.strftime('%y-%m-%d')
+                #     else:
+                #         planilla['fecha_cierre'] = None
+                #     print(planilla)
+                #     data.append(planilla)
                 data = form.save()
             else:
                 data['error'] = 'No ha ingresado a ninguna opcion'

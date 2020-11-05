@@ -17,8 +17,8 @@ $(function () {
             {"data": "id"},
             {"data": "comprobante_cliente"},
             {"data": "fecha_comprobante"},
-            {"data": "monto_original"},
-            {"data": "monto_cancelado"},
+            {"data": "monto"},
+            // {"data": "monto_cancelado"},
             {"data": "opciones"},
         ],
 

@@ -19,7 +19,7 @@ class Caja(models.Model):
     user_caja = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True,
                                   verbose_name='usuario caja', related_name='User_caja')
     estado = models.CharField(max_length=1, choices=ESTADO_OPCIONES)
-    fecha_cierre = models.DateTimeField(auto_now=True, verbose_name='Fecha cierre')
+    fecha_cierre = models.DateField(auto_now=True, verbose_name='Fecha cierre')
     saldo_inicial = models.DecimalField(
         max_digits=8, decimal_places=2, verbose_name='Saldo inicial')
     monto_cierre = models.DecimalField(max_digits=8, decimal_places=2, verbose_name='Monto cierre')
@@ -47,8 +47,8 @@ class Cliente (models.Model):
     telefono = models.IntegerField(verbose_name='Telefono')
     email = models.EmailField(blank=True, null=True)
     direccion = models.CharField(max_length=40, null=True, blank=True, verbose_name='Dirección')
-    creado = models.DateTimeField(auto_now_add=True)
-    actualizado = models.DateTimeField(auto_now=True)
+    creado = models.DateField(auto_now_add=True)
+    actualizado = models.DateField(auto_now=True)
 
     def __str__(self):
         return '{} {} {} {} {} {}'.format(self.nombre, self.apellido, self.dni, self.telefono, self.email,  self.creado)
@@ -73,8 +73,8 @@ class Cobrador (models.Model):
     direccion = models.CharField(max_length=40, null=True,
                                  blank=True, verbose_name='Dirección')
     email = models.EmailField(blank=True, null=True)
-    creado = models.DateTimeField(auto_now_add=True)
-    actualizado = models.DateTimeField(auto_now=True)
+    creado = models.DateField(auto_now_add=True)
+    actualizado = models.DateField(auto_now=True)
 
     def __str__(self):
         return '{} {} {} {} {} {}'.format(self.nombre, self.apellido, self.dni, self.telefono, self.email,  self.creado)
@@ -101,8 +101,8 @@ class Planilla (models.Model):
     planilla_cobrador = models.ForeignKey(
         Cobrador, on_delete=models.CASCADE, verbose_name='Cobrador id')
     estado = models.CharField(max_length=1, choices=ESTADO_OPCIONES)
-    fecha_emision = models.DateTimeField(auto_now_add=True, verbose_name='Fecha emision')
-    fecha_cierre = models.DateTimeField(auto_now=True)
+    fecha_emision = models.DateField(auto_now_add=True, null=True, verbose_name='Fecha emision')
+    fecha_cierre = models.DateField(auto_now=True, blank=True, null=True)
     monto_total = models.DecimalField(max_digits=8, decimal_places=2, verbose_name='Monto Total')
     cantidad_recibos = models.IntegerField(verbose_name='Cantidad de Recibos')
 
@@ -180,45 +180,13 @@ class Cheque (models.Model):
         ordering = ['id']
 
 
-class Recibo(models.Model):
-    recibo_planilla = models.ForeignKey(
-        Planilla, on_delete=models.CASCADE, null=True, blank=True, verbose_name='Nro Planilla')
-    recibo_caja = models.ForeignKey(Caja, on_delete=models.CASCADE,
-                                    null=True, blank=True, verbose_name='Nro Caja')
-    recibo_cliente = models.ForeignKey(
-        Cliente, on_delete=models.CASCADE, null=True, blank=True, verbose_name='Cliente DNI')
-    monto = models.DecimalField(max_digits=8, decimal_places=2, verbose_name='Monto')
-    fecha = models.DateTimeField(auto_now_add=True, verbose_name='Fecha')
-    estado = models.CharField(max_length=10, verbose_name='Estado')
-    comprobantes_Cancelados = models.CharField(
-        max_length=10, verbose_name='Comprobantes Cancelados')
-    monto_comprobantes = models.DecimalField(
-        max_digits=8, decimal_places=2, verbose_name='Monto Comprobantes')
-    cheque = models.ForeignKey(Cheque, on_delete=models.CASCADE, null=True,
-                               blank=True, verbose_name='Nro Cheque')
-
-    def toJSON(self):
-        item = model_to_dict(self)
-        item['fecha'] = self.fecha.strftime('%y-%m-%d')
-        return item
-
-    def __str__(self):
-        return '{} {} {} {} {} {} {} {}'.format(self.recibo_caja, self.recibo_cliente, self.monto, self.fecha, self.estado, self.comprobantes_Cancelados, self.monto_comprobantes, self.cheque)
-
-    class Meta:
-        verbose_name = 'Recibo'
-        verbose_name_plural = 'Recibos'
-        ordering = ['id']
-
-
 class Comprobante (models.Model):
     comprobante_cliente = models.ForeignKey(
         Cliente, on_delete=models.CASCADE, verbose_name='Cliente')
-    fecha_comprobante = models.DateTimeField(auto_now_add=True, verbose_name='Fecha')
-    monto_original = models.DecimalField(
-        max_digits=8, decimal_places=2, verbose_name='Monto Original')
-    monto_cancelado = models.DecimalField(
-        max_digits=8, decimal_places=2, verbose_name='Monto Cancelado')
+    fecha_comprobante = models.DateField(auto_now_add=True, verbose_name='Fecha')
+    monto = models.DecimalField(max_digits=8, decimal_places=2, verbose_name='Monto')
+    # monto_cancelado = models.DecimalField(
+    #     max_digits=8, decimal_places=2, verbose_name='Monto Cancelado')
 
     class Meta:
         ordering = ['id']
@@ -232,7 +200,49 @@ class Comprobante (models.Model):
         return item
 
     def __str__(self):
-        return '{} {} {} {}'.format(self.comprobante_cliente, self.fecha_comprobante, self.monto_original, self.monto_cancelado)
+        return '{} {} {}'.format(self.comprobante_cliente, self.fecha_comprobante, self.monto)
+
+
+class Recibo(models.Model):
+    ESTADO_ABIERTO = 'A'
+    ESTADO_CERRADO = 'C'
+
+    ESTADO_OPCIONES = (
+        (ESTADO_ABIERTO, 'Abierta'),
+        (ESTADO_CERRADO, 'Cerrada')
+    )
+
+    recibo_planilla = models.ForeignKey(
+        Planilla, on_delete=models.CASCADE, null=True, blank=True, verbose_name='Nro Planilla')
+    recibo_caja = models.ForeignKey(Caja, on_delete=models.CASCADE,
+                                    null=True, blank=True, verbose_name='Nro Caja')
+    recibo_cliente = models.ForeignKey(
+        Cliente, on_delete=models.CASCADE, null=True, blank=True, verbose_name='Cliente DNI')
+    monto = models.DecimalField(max_digits=8, decimal_places=2, verbose_name='Monto')
+    fecha = models.DateField(auto_now_add=True, verbose_name='Fecha')
+    estado = models.CharField(max_length=1, choices=ESTADO_OPCIONES)
+    comprobantes = models.ForeignKey(
+        Comprobante, on_delete=models.CASCADE, null=True, blank=True, verbose_name='Comprobantes Cancelados')
+    # monto_comprobantes = models.DecimalField(
+    #     max_digits=8, decimal_places=2, verbose_name='Monto Comprobantes')
+    cheque = models.ForeignKey(Cheque, on_delete=models.CASCADE, null=True,
+                               blank=True, verbose_name='Nro Cheque')
+
+    def toJSON(self):
+        item = model_to_dict(self)
+        if item['estado'] == 'C':
+            item['fecha'] = self.fecha.strftime('%y-%m-%d')
+        else:
+            item['fecha'] = None
+        return item
+
+    def __str__(self):
+        return '{} {} {} {} {} {} {}'.format(self.recibo_caja, self.recibo_cliente, self.monto, self.fecha, self.estado, self.comprobantes, self.cheque)
+
+    class Meta:
+        verbose_name = 'Recibo'
+        verbose_name_plural = 'Recibos'
+        ordering = ['id']
 
 
 class ComprobanteGenerado (models.Model):

@@ -253,11 +253,6 @@ class ComprobanteForm(ModelForm):
                     'placeholder': 'Ingrese el monto del comprobante',
                 }
             ),
-            'monto_cancelado': TextInput(
-                attrs={
-                    'placeholder': 'Ingrese el monto cancelado',
-                }
-            ),
         }
 
     def save(self, commit=True):
@@ -318,7 +313,9 @@ class ReciboForm (ModelForm):
         self.fields['recibo_planilla'].widget.attrs['autofocus'] = True
         self.fields['recibo_caja'].widget.attrs['autofocus'] = False
         self.fields['recibo_cliente'].widget.attrs['autofocus'] = False
+        self.fields['comprobantes'].widget.attrs['autofocus'] = False
         self.fields['cheque'].widget.attrs['autofocus'] = False
+        self.fields['estado'].widget.attrs['autofocus'] = False
 
     class Meta:
         model = Recibo
@@ -328,21 +325,6 @@ class ReciboForm (ModelForm):
             'monto': TextInput(
                 attrs={
                     'placeholder': 'Ingrese un monto',
-                }
-            ),
-            'estado': TextInput(
-                attrs={
-                    'placeholder': 'Ingrese un estado',
-                }
-            ),
-            'comprobantes_Cancelados': TextInput(
-                attrs={
-                    'placeholder': 'Ingrese comprobantes cancelados',
-                }
-            ),
-            'monto_comprobantes': TextInput(
-                attrs={
-                    'placeholder': 'Ingrese monto comprobantes',
                 }
             ),
         }
@@ -434,6 +416,10 @@ class PlanillaForm(ModelForm):
         form = super()
         try:
             if form.is_valid():
+                # if self.fields['estado'] == 'C':
+                #     self.fecha_cierre.strftime('%y-%m-%d')
+                # else:
+                #     self.fecha_cierre = None
                 form.save()
             else:
                 data['error'] = form.errors

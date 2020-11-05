@@ -26,11 +26,16 @@
                     <div class="container">
                         {% block content %}
                         <h3> Con SGCapp prodra realizar el control de los cobros </h3>
+                        <li><a href="{% url 'SGCapp:CajaListView' %}"><i class="bx bx-file-blank"></i> <span>Cajas</span></a></li>
+                        <li><a href="{% url 'SGCapp:ReciboListView' %}"><i class="bx bx-server"></i> Recibos</a></li>
+                        <li><a href="{% url 'SGCapp:PlanillaListView' %}"><i class="bx bx-server"></i> Planillas</a></li>
                         <li><a href="{% url 'SGCapp:ClienteListView' %}"><i class="bx bx-file-blank"></i> <span>Clientes</span></a></li>
                         <li><a href="{% url 'SGCapp:CobradorListView' %}"><i class="bx bx-book-content"></i>Cobradores</a></li>
                         <li><a href="{% url 'SGCapp:BancoListView' %}"><i class="bx bx-server"></i> Bancos</a></li>
+                        <li><a href="{% url 'SGCapp:ChequeListView' %}"><i class="bx bx-server"></i> Cheques</a></li>
                         <li><a href="{% url 'SGCapp:AnticipoListView' %}"><i class="bx bx-server"></i> Anticipos</a></li>
-            
+                        <li><a href="{% url 'SGCapp:ComprobanteListView' %}"><i class="bx bx-server"></i> Comprobantes</a></li>
+                        <li><a href="{% url 'SGCapp:ComprobanteGeneradoListView' %}"><i class="bx bx-server"></i> Comprobantes Generados</a></li>
                         {% endblock %}
                     </div>
                 </div>

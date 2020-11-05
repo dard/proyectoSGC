@@ -47,8 +47,8 @@ class PlanillaAdmin(admin.ModelAdmin):
 
 class ComprobanteAdmin(admin.ModelAdmin):
     list_display = ('id', 'comprobante_cliente', 'fecha_comprobante',
-                    'monto_original', 'monto_cancelado')
-    search_fields = ('monto_original', 'monto_cancelado', 'comprobante_cliente')
+                    'monto')
+    search_fields = ('monto', 'comprobante_cliente')
     date_hierarchy = 'fecha_comprobante'
 
 # @admin.register(ComprobanteGenerado)
@@ -64,7 +64,7 @@ class ComprobanteGeneradoAdmin(admin.ModelAdmin):
 
 class ReciboAdmin(admin.ModelAdmin):
     list_display = ('id', 'recibo_planilla', 'recibo_caja', 'monto', 'fecha', 'estado',
-                    'comprobantes_Cancelados', 'monto_comprobantes', 'cheque')
+                    'comprobantes', 'cheque')
     search_fields = ('monto',)
     list_filter = ('estado',)
     date_hierarchy = 'fecha'
