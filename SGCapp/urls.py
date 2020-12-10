@@ -53,16 +53,13 @@ urlpatterns = [
     path('deleteComprobanteGenerado/<int:pk>/',
          views.ComprobanteGeneradoDeleteView.as_view(), name='ComprobanteGeneradoDeleteView'),
 
-    # urls Recibos
-    path('listRecibo/', views.ReciboListView.as_view(),
-         name='ReciboListView'),
-    path('addRecibo/', views.ReciboCreateView.as_view(),
-         name='ReciboCreateView'),
-    path('editRecibo/<int:pk>/', views.ReciboUpdateView.as_view(),
-         name='ReciboUpdateView'),
-    path('deleteRecibo/<int:pk>/',
-         views.ReciboDeleteView.as_view(), name='ReciboDeleteView'),
-
+    # urls Recibos_facturas
+    path('listReciboFactura/', views.ReciboFacturaListView.as_view(),
+         name='ReciboFacturaListView'),
+    path('addReciboFactura/', views.ReciboFacturaCreateView.as_view(),
+         name='ReciboFacturaCreateView'),
+    path('deleteReciboFactura/<int:pk>/',
+         views.ReciboFacturaDeleteView.as_view(), name='ReciboFacturaDeleteView'),
 
     # urls Caja
     path('listCaja/', views.CajaListView.as_view(),

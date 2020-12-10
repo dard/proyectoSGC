@@ -20,18 +20,18 @@
                 </li>
                 <li class="nav-item dropdown">
                     <a id="dropdownSubMenu1" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
-                       class="nav-link dropdown-toggle"><i class="fas fa-folder-open"></i> Mantenimientos</a>
+                       class="nav-link dropdown-toggle"><i class="fas fa-folder-open"></i> Gestiones</a>
                     <ul aria-labelledby="dropdownSubMenu1" class="dropdown-menu border-0 shadow">
-                        <li><a href="{% url 'SGCapp:CajaListView' %}" class="dropdown-item"><i class="fas fa-cash-register"></i> Cajas</a></li>
-                        <li><a href="{% url 'SGCapp:PlanillaListView'%}" class="dropdown-item"><i class="fas fa-file-excel"></i> Planillas</a></li>
-                        <li><a href="{% url 'SGCapp:ReciboListView' %}" class="dropdown-item"><i class="fas fa-ticket-alt"></i> Recibos</a></li>
-                        <li><a href="{% url 'SGCapp:ComprobanteListView' %}" class="dropdown-item"><i class="fas fa-receipt"></i> Comprobantes</a></li>
-                        <li><a href="{% url 'SGCapp:ComprobanteGeneradoListView' %}" class="dropdown-item"><i class="fas fa-redo"></i> Comprobantes Generados</a></li>
                         <li><a href="{% url 'SGCapp:ClienteListView' %}" class="dropdown-item"><i class="fas fa-users"></i> Clientes</a></li>
                         <li><a href="{% url 'SGCapp:CobradorListView' %}" class="dropdown-item"><i class="fas fa-user-alt"></i> Cobradores</a></li>
+                        <li><a href="{% url 'SGCapp:ComprobanteListView' %}" class="dropdown-item"><i class="fas fa-receipt"></i> Comprobantes</a></li>
                         <li><a href="{% url 'SGCapp:BancoListView' %}" class="dropdown-item"><i class="fas fa-piggy-bank"></i> Bancos</a></li>
                         <li><a href="{% url 'SGCapp:ChequeListView' %}" class="dropdown-item"><i class="fas fa-money-check"></i> Cheques</a></li>
-                        <li><a href="{% url 'SGCapp:AnticipoListView' %}" class="dropdown-item"><i class="fas fa-file-invoice-dollar"></i> Anticipos</a></li>
+                        <li><a href="{% url 'SGCapp:CajaListView' %}" class="dropdown-item"><i class="fas fa-cash-register"></i> Cajas</a></li>
+                        <li><a href="{% url 'SGCapp:PlanillaListView'%}" class="dropdown-item"><i class="fas fa-file-excel"></i> Planillas</a></li>
+                        <li><a href="{% url 'SGCapp:ReciboFacturaListView' %}" class="dropdown-item"><i class="fas fa-ticket-alt"></i> Recibos</a></li>
+                        <!-- <li><a href="{% url 'SGCapp:ComprobanteGeneradoListView' %}" class="dropdown-item"><i class="fas fa-redo"></i> Comprobantes Generados</a></li> -->
+                        <!-- <li><a href="{% url 'SGCapp:AnticipoListView' %}" class="dropdown-item"><i class="fas fa-file-invoice-dollar"></i> Anticipos</a></li> -->
 
                     </ul>
                 </li>

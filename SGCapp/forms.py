@@ -1,5 +1,6 @@
 from django.forms import *
 from SGCapp.models import *
+from datetime import datetime
 
 
 class ClienteForm (ModelForm):
@@ -304,15 +305,80 @@ class ComprobanteGeneradoForm(ModelForm):
 # formulario Recibo
 
 
+class ReciboFacturaForm (ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for form in self.visible_fields():
+            form.field.widget.attrs['class'] = 'form-control'
+            form.field.widget.attrs['autocomplete'] = 'off'
+        self.fields['recibo_cliente'].widget.attrs['autofocus'] = True
+        self.fields['recibo_cliente'].widget.attrs['class'] = 'form-control select2'
+        self.fields['recibo_cliente'].widget.attrs['style'] = 'width: 100%'
+        self.fields['recibo_planilla'].widget.attrs['autofocus'] = False
+        self.fields['recibo_planilla'].widget.attrs['class'] = 'form-control select2'
+        self.fields['recibo_planilla'].widget.attrs['style'] = 'width: 100%'
+        self.fields['recibo_caja'].widget.attrs['autofocus'] = False
+        self.fields['recibo_caja'].widget.attrs['class'] = 'form-control select2'
+        self.fields['recibo_caja'].widget.attrs['style'] = 'width: 100%'
+        self.fields['comprobantes'].widget.attrs['autofocus'] = False
+        self.fields['comprobantes'].widget.attrs['class'] = 'form-control select2'
+        self.fields['comprobantes'].widget.attrs['style'] = 'width: 100%'
+        self.fields['cheque'].widget.attrs['autofocus'] = False
+        self.fields['cheque'].widget.attrs['class'] = 'form-control select2'
+        self.fields['cheque'].widget.attrs['style'] = 'width: 100%'
+        self.fields['estado'].widget.attrs['autofocus'] = False
+        self.fields['estado'].widget.attrs['class'] = 'form-control select2'
+        self.fields['estado'].widget.attrs['style'] = 'width: 100%'
+
+    class Meta:
+        model = Recibo
+        fields = '__all__'
+        # permite widgets personalizar
+        widgets = {
+            'fecha': DateInput(
+                format='%Y-%m-%d',
+                attrs={
+                    'value': datetime.now().strftime('%Y-%m-%d'),
+                    'autocomplete': 'off',
+                    'class': 'form-control datetimepicker-input',
+                    'id': 'fecha',
+                    'data-target': '#fecha',
+                    'data-toggle': 'datetimepicker'
+                }),
+            'subtotalComp': TextInput(
+                attrs={
+                    'readonly': True,
+                    'class': 'form-control select2',
+                }),
+            'subtotalCheq': TextInput(
+                attrs={
+                    'readonly': True,
+                    'class': 'form-control select2',
+                }),
+            'efectivo': TextInput(
+                attrs={
+                    'class': 'form-control select2',
+                }),
+            'total': TextInput(
+                attrs={
+                    'readonly': True,
+                    'class': 'form-control select2',
+                }),
+        }
+
+
+# formulario Recibo
+
+
 class ReciboForm (ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for form in self.visible_fields():
             form.field.widget.attrs['class'] = 'form-control'
             form.field.widget.attrs['autocomplete'] = 'off'
-        self.fields['recibo_planilla'].widget.attrs['autofocus'] = True
+        self.fields['recibo_cliente'].widget.attrs['autofocus'] = True
+        self.fields['recibo_planilla'].widget.attrs['autofocus'] = False
         self.fields['recibo_caja'].widget.attrs['autofocus'] = False
-        self.fields['recibo_cliente'].widget.attrs['autofocus'] = False
         self.fields['comprobantes'].widget.attrs['autofocus'] = False
         self.fields['cheque'].widget.attrs['autofocus'] = False
         self.fields['estado'].widget.attrs['autofocus'] = False
@@ -322,11 +388,11 @@ class ReciboForm (ModelForm):
         fields = '__all__'
         # permite widgets personalizar
         widgets = {
-            'monto': TextInput(
+            'total': TextInput(
                 attrs={
-                    'placeholder': 'Ingrese un monto',
-                }
-            ),
+                    'readonly': True,
+                    'class': 'form-control',
+                }),
         }
 
     def save(self, commit=True):

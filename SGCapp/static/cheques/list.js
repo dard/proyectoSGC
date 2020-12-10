@@ -16,7 +16,7 @@ $(function () {
         columns: [
             {"data": "id"},
             {"data": "cheque_banco"},
-            {"data": "numero"},
+            {"data": "fecha"},
             {"data": "monto"},
             {"data": "imagen"},
             {"data": "opciones"},

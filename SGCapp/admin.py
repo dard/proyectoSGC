@@ -30,14 +30,16 @@ class ClienteAdmin(admin.ModelAdmin):
 
 # @admin.register(Caja)
 class CajaAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user_caja', 'estado', 'fecha_cierre', 'saldo_inicial', 'monto_cierre')
+    list_display = ('id', 'user_caja', 'estado', 'fecha_cierre',
+                    'saldo_inicial', 'monto_cierre')
 
 # @admin.register(Planilla)
 
 
 class PlanillaAdmin(admin.ModelAdmin):
-    list_display = ('id', 'planilla_caja', 'planilla_cobrador', 'fecha_emision',
-                    'fecha_cierre', 'monto_total', 'estado', 'cantidad_recibos')
+    list_display = ('id', 'planilla_caja', 'planilla_cobrador',
+                    'fecha_emision', 'fecha_cierre',
+                    'monto_total', 'estado', 'cantidad_recibos')
     search_fields = ('planilla_caja', 'planilla_cobrador')
     list_filter = ('estado',)
     date_hierarchy = 'fecha_emision'
@@ -55,7 +57,8 @@ class ComprobanteAdmin(admin.ModelAdmin):
 
 
 class ComprobanteGeneradoAdmin(admin.ModelAdmin):
-    list_display = ('id', 'comprobante_recibo', 'comprobante_generado', 'monto')
+    list_display = ('id', 'comprobante_recibo',
+                    'comprobante_generado', 'monto')
     search_fields = ('comprobante_generado',)
     list_filter = ('monto',)
 
@@ -63,9 +66,10 @@ class ComprobanteGeneradoAdmin(admin.ModelAdmin):
 
 
 class ReciboAdmin(admin.ModelAdmin):
-    list_display = ('id', 'recibo_planilla', 'recibo_caja', 'monto', 'fecha', 'estado',
-                    'comprobantes', 'cheque')
-    search_fields = ('monto',)
+    list_display = ('id', 'recibo_planilla', 'recibo_caja', 'efectivo',
+                    'subtotalComp', 'subtotalCheq', 'total', 'fecha',
+                    'estado', 'comprobantes', 'cheque')
+    search_fields = ('total',)
     list_filter = ('estado',)
     date_hierarchy = 'fecha'
 
@@ -87,9 +91,9 @@ class BancoAdmin(admin.ModelAdmin):
 
 
 class ChequeAdmin(admin.ModelAdmin):
-    list_display = ('id', 'cheque_banco', 'numero', 'monto', 'imagen')
-    search_fields = ('numero',)
-    list_filter = ('id', 'monto',)
+    list_display = ('id', 'cheque_banco', 'fecha', 'monto', 'imagen')
+    search_fields = ('monto', 'id', 'fecha')
+    list_filter = ('id', 'monto', 'fecha')
 
     # def formfield_for_foreignkey(self, db_field, request, **kwards):
     #     if db_field_name == 'cheque_banco':

@@ -1,3 +1,6 @@
+import json
+
+from django.db import transaction
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, HttpResponse
@@ -7,7 +10,7 @@ from django.views.generic import ListView, CreateView, UpdateView, DeleteView, F
 from django.utils.decorators import method_decorator
 from SGCapp.models import Cliente, Cobrador, Banco, Cheque, Anticipo, Comprobante, ComprobanteGenerado, Recibo, Caja, Planilla
 from SGCuser.models import User
-from SGCapp.forms import ClienteForm, CobradorForm, BancoForm, ChequeForm, AnticipoForm, ComprobanteForm, ComprobanteGeneradoForm, ReciboForm, CajaForm, PlanillaForm
+from SGCapp.forms import ClienteForm, CobradorForm, BancoForm, ChequeForm, AnticipoForm, ComprobanteForm, ComprobanteGeneradoForm, ReciboForm, CajaForm, PlanillaForm, ReciboFacturaForm
 
 # Create your views here.
 
@@ -1159,11 +1162,10 @@ class ComprobanteGeneradoFormView(FormView):
         return context
 
 
-# VISTAS RECIBO------------------------------------------------------
-
-class ReciboListView (ListView):
+# VISTAS RECIBO FACTURA------------------------------------------------------
+class ReciboFacturaListView(ListView):
     model = Recibo
-    template_name = 'SGCapp/recibos/list.html'
+    template_name = 'SGCapp/recibos_facturas/list.html'
 
     @method_decorator(login_required)
     @method_decorator(csrf_exempt)
@@ -1181,18 +1183,45 @@ class ReciboListView (ListView):
             if action == 'searchdata':
                 data = []
                 for i in Recibo.objects.all()[:]:
-                    # print(i)
                     print('i')
                     print(i)
+
                     recibo = i.toJSON()
                 # asigno el nombre del campo en el diccionario
                     recibo['recibo_cliente'] = i.recibo_cliente.dni
+                    # try:
+                    #     recibo['recibo_planilla'] = i.recibo_planilla.id
+                    # except:
+                    #     pass
+                    # try:
+                    #     recibo['recibo_caja'] = i.recibo_caja.id
+                    # except:
+                    #     pass
+                    # try:
+                    #     recibo['comprobantes'] = i.comprobantes.monto
+                    # except:
+                    #     pass
+                    # try:
+                    #     recibo['cheque'] = i.cheque.monto
+                    # except:
+                    #     pass
                     print('recibo')
                     print(recibo)
                     data.append(recibo)
-                    # data.append(i.toJSON())
-                # for i in Cheque.objects.all():
+            elif action == 'search_details_recibo':
+                data = []
+                for i in Recibo.objects.filter(recibo_cliente=request.POST['id']):
+                    recibo = i.toJSON()
+                    print('++++++')
+                    print(recibo['subtotalComp'])
+                    recibo['subtotalComp'] = i.subtotalComp
+                    recibo['subtotalCheq'] = i.subtotalCheq
+                    recibo['fecha'] = i.fecha
+                    recibo['subtotal'] = i.subtotal
+                    data.append(i.toJSON())
+                # for i in Cheque.objects.filter(cheque_banco_id=request.POST['id']):
                 #     data.append(i.toJSON())
+
             else:
                 data['error'] = 'Ha ocurrido un error'
         except Exception as e:
@@ -1201,18 +1230,20 @@ class ReciboListView (ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = 'Listado de Recibos'
-        context['create_url'] = reverse_lazy('SGCapp:ReciboCreateView')
-        context['list_url'] = reverse_lazy('SGCapp:ReciboListView')
+        context['title'] = 'Listado de Recibos Facturas'
+        context['create_url'] = reverse_lazy('SGCapp:ReciboFacturaCreateView')
+        context['list_url'] = reverse_lazy('SGCapp:ReciboFacturaListView')
         context['entity'] = 'Recibos'
         return context
 
 
-class ReciboCreateView(CreateView):
+class ReciboFacturaCreateView(CreateView):
     model = Recibo
-    form_class = ReciboForm
-    template_name = 'SGCapp/recibos/create.html'
-    success_url = reverse_lazy('SGCapp:ReciboListView')
+    form_class = ReciboFacturaForm
+    template_name = 'SGCapp/recibos_facturas/create.html'
+    success_url = reverse_lazy('SGCapp:ReciboFacturaListView')
+
+    # con estos decoradores desactivo metodos de defensa
 
     @method_decorator(login_required)
     @method_decorator(csrf_exempt)
@@ -1223,69 +1254,83 @@ class ReciboCreateView(CreateView):
         data = {}
         try:
             action = request.POST['action']
-            if action == 'add':
-                form = self.get_form()
-                data = form.save()
+            print('* action')
+            print(action)
+            if action == 'search_comprobantes':
+                data = []
+                comprobantes = Comprobante.objects.filter(
+                    comprobante_cliente=request.POST['term'])
+                for i in comprobantes:
+                    item = i.toJSON()
+                    item['value'] = i.comprobante_cliente.dni
+                    data.append(item)
+            elif action == 'search_cheques':
+                data = []
+                print('request.POST')
+                print(request.POST)
+                cheques = Cheque.objects.filter(
+                    cheque_banco__nombre__icontains=request.POST['term'])
+                for i in cheques:
+                    item = i.toJSON()
+                    item['value'] = i.cheque_banco.nombre
+                    # item['value'] = str(i.id)
+                    data.append(item)
+            elif action == 'add':
+                with transaction.atomic():
+                    detComprobante = json.loads(request.POST['detComprobante'])
+                    detCheques = json.loads(request.POST['detCheques'])
+                    print('1 subtotalCheq')
+                    print(detCheques['subtotalCheq'])
+                    print(detComprobante['comprobantes'])
+                    # print(detCheques['cheque'])
+                    recibo = Recibo()
+
+                    recibo.fecha = detComprobante['fecha']
+                    recibo.fecha = detCheques['fecha']
+                    print('1 detComprobante')
+                    print(detComprobante)
+                    print('2 detCheques')
+                    print(detCheques)
+                    recibo.recibo_cliente = Cliente.objects.get(
+                        pk=Comprobante.objects.get(pk=detComprobante['comprobantes'][0]['id']).comprobante_cliente.pk)
+                    recibo.recibo_planilla = Planilla.objects.get(
+                        pk=detComprobante['recibo_planilla'])
+                    recibo.recibo_caja = Caja.objects.get(
+                        pk=detComprobante['recibo_caja'])
+                    recibo.estado = detComprobante['estado']
+                    # recibo.comprobantes = Comprobante.objects.get(pk=detComprobante['comprobantes'])
+                    recibo.subtotalComp = float(detComprobante['subtotalComp'])
+                    recibo.efectivo = float(detComprobante['efectivo'])
+                    # recibo.cheque = Cheque.objects.get(pk=detCheques['cheque'])
+                    recibo.subtotalCheq = float(detCheques['subtotalCheq'])
+                    recibo.total = float(detComprobante['total'])
+                    recibo.save()
+
             else:
                 data['error'] = 'No ha ingresado a ninguna opcion'
         except Exception as e:
             data['error'] = str(e)
-        return JsonResponse(data)
+        finally:
+            print('data recibo Factura')
+            print(data)
+        return JsonResponse(data, safe=False)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = 'Crear Recibo'
+        context['title'] = 'Crear Recibo Factura'
         context['entity'] = 'Recibos'
-        context['list_url'] = reverse_lazy('SGCapp:ReciboListView')
+        context['list_url'] = reverse_lazy('SGCapp:ReciboFacturaListView')
         context['action'] = 'add'
         return context
 
 
-class ReciboUpdateView(UpdateView):
-
+class ReciboFacturaDeleteView(DeleteView):
     model = Recibo
-    form_class = ReciboForm
-    template_name = 'SGCapp/recibos/create.html'
-    success_url = reverse_lazy('SGCapp:ReciboListView')
+    template_name = 'SGCapp/recibos_facturas/delete.html'
+    success_url = reverse_lazy('SGCapp:ReciboFacturaListView')
 
-    @method_decorator(login_required)
-    @method_decorator(csrf_exempt)
-    def dispatch(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        return super().dispatch(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        data = {}
-        print('imprimir post')
-        print(request.POST)
-        try:
-            action = request.POST['action']
-            if action == 'edit':
-                form = self.get_form()
-                data = form.save()
-            else:
-                data['error'] = 'No ha ingresado a ninguna opcion'
-        except Exception as e:
-            data['error'] = str(e)
-        return JsonResponse(data)
-
-    def get_context_data(self, **kwargs):
-        print(self.get_object())
-        context = super().get_context_data(**kwargs)
-        context['title'] = 'Editar Recibo'
-        context['entity'] = 'Recibos'
-        context['list_url'] = reverse_lazy('SGCapp:ReciboListView')
-        context['action'] = 'edit'
-        return context
-
-
-class ReciboDeleteView(DeleteView):
-    model = Recibo
-    template_name = 'SGCapp/recibos/delete.html'
-    success_url = reverse_lazy('SGCapp:ReciboListView')
-
-    @method_decorator(login_required)
-    @method_decorator(csrf_exempt)
+    @ method_decorator(login_required)
+    @ method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
         self.object = self.get_object()
         return super().dispatch(request, *args, **kwargs)
@@ -1311,12 +1356,13 @@ class ReciboDeleteView(DeleteView):
         context['list_url'] = self.success_url
         return context
 
+# vista form Recibo Factura
 
-# vista form Recibo
+
 class ReciboFormView(FormView):
     form_class = ReciboForm
-    template_name = 'SGCapp/recibos/create.html'
-    success_url = reverse_lazy('SGCapp:ReciboListView')
+    template_name = 'SGCapp/recibos_facturas/create.html'
+    success_url = reverse_lazy('SGCapp:ReciboFacturaListView')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -1326,13 +1372,184 @@ class ReciboFormView(FormView):
         return context
 
 
+# VISTAS RECIBO------------------------------------------------------
+
+# class ReciboListView (ListView):
+#     model = Recibo
+#     template_name = 'SGCapp/recibos/list.html'
+#
+#     @ method_decorator(login_required)
+#     @ method_decorator(csrf_exempt)
+#     def dispatch(self, request, *args, **kwargs):
+#         return super().dispatch(request, *args, **kwargs)
+#
+#     def post(self, request, *args, **kwargs):
+#         data = {}
+#         # data = Comprobante.objects.get(pk=request.POST['id']).toJSON
+#         # return JsonResponse(data)
+#         # el siguiente codigo es para renderizar con ayax cuando son miles de
+#         # filas en la tabla se utiliza con el list.js y el toJson
+#         try:
+#             action = request.POST['action']
+#             if action == 'searchdata':
+#                 data = []
+#                 for i in Recibo.objects.all()[:]:
+#                     # print(i)
+#                     print('i')
+#                     print(i)
+#                     recibo = i.toJSON()
+#                 # asigno el nombre del campo en el diccionario
+#                     recibo['recibo_cliente'] = i.recibo_cliente.dni
+#                     recibo['recibo_planilla'] = i.recibo_planilla.id
+#                     recibo['recibo_caja'] = i.recibo_caja.id
+#                     recibo['comprobantes'] = i.comprobantes.monto
+#                     recibo['cheque'] = i.cheque.monto
+#                     print('recibo')
+#                     print(recibo)
+#                     data.append(recibo)
+#                     # data.append(i.toJSON())
+#                 # for i in Cheque.objects.all():
+#                 #     data.append(i.toJSON())
+#             else:
+#                 data['error'] = 'Ha ocurrido un error'
+#         except Exception as e:
+#             data['error'] = str(e)
+#         return JsonResponse(data, safe=False)
+#
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#         context['title'] = 'Listado de Recibos'
+#         context['create_url'] = reverse_lazy('SGCapp:ReciboCreateView')
+#         context['list_url'] = reverse_lazy('SGCapp:ReciboListView')
+#         context['entity'] = 'Recibos'
+#         return context
+
+
+# class ReciboCreateView(CreateView):
+#     model = Recibo
+#     form_class = ReciboForm
+#     template_name = 'SGCapp/recibos/create.html'
+#     success_url = reverse_lazy('SGCapp:ReciboListView')
+#
+#     @ method_decorator(login_required)
+#     @ method_decorator(csrf_exempt)
+#     def dispatch(self, request, *args, **kwargs):
+#         return super().dispatch(request, *args, **kwargs)
+#
+#     def post(self, request, *args, **kwargs):
+#         data = {}
+#         try:
+#             action = request.POST['action']
+#             if action == 'add':
+#                 form = self.get_form()
+#                 data = form.save()
+#             else:
+#                 data['error'] = 'No ha ingresado a ninguna opcion'
+#         except Exception as e:
+#             data['error'] = str(e)
+#         return JsonResponse(data)
+#
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#         context['title'] = 'Crear Recibo'
+#         context['entity'] = 'Recibos'
+#         context['list_url'] = reverse_lazy('SGCapp:ReciboListView')
+#         context['action'] = 'add'
+#         return context
+
+
+# class ReciboUpdateView(UpdateView):
+#
+#     model = Recibo
+#     form_class = ReciboForm
+#     template_name = 'SGCapp/recibos/create.html'
+#     success_url = reverse_lazy('SGCapp:ReciboListView')
+#
+#     @ method_decorator(login_required)
+#     @ method_decorator(csrf_exempt)
+#     def dispatch(self, request, *args, **kwargs):
+#         self.object = self.get_object()
+#         return super().dispatch(request, *args, **kwargs)
+#
+#     def post(self, request, *args, **kwargs):
+#         data = {}
+#         print('imprimir post')
+#         print(request.POST)
+#         try:
+#             action = request.POST['action']
+#             if action == 'edit':
+#                 form = self.get_form()
+#                 data = form.save()
+#             else:
+#                 data['error'] = 'No ha ingresado a ninguna opcion'
+#         except Exception as e:
+#             data['error'] = str(e)
+#         return JsonResponse(data)
+#
+#     def get_context_data(self, **kwargs):
+#         print(self.get_object())
+#         context = super().get_context_data(**kwargs)
+#         context['title'] = 'Editar Recibo'
+#         context['entity'] = 'Recibos'
+#         context['list_url'] = reverse_lazy('SGCapp:ReciboListView')
+#         context['action'] = 'edit'
+#         return context
+
+
+# class ReciboDeleteView(DeleteView):
+#     model = Recibo
+#     template_name = 'SGCapp/recibos/delete.html'
+#     success_url = reverse_lazy('SGCapp:ReciboListView')
+#
+#     @ method_decorator(login_required)
+#     @ method_decorator(csrf_exempt)
+#     def dispatch(self, request, *args, **kwargs):
+#         self.object = self.get_object()
+#         return super().dispatch(request, *args, **kwargs)
+#
+#     def post(self, request, *args, **kwargs):
+#         data = {}
+#         print('imprimir post')
+#         print(request.POST)
+#         try:
+#             self.object.delete()
+#         except Exception as e:
+#             data['error'] = str(e)
+#         return JsonResponse(data)
+#
+#         print(request.POST)
+#         return HttpResponseRedirect(self.success_url)
+#
+#     def get_context_data(self, **kwargs):
+#         print(self.success_url)
+#         context = super().get_context_data(**kwargs)
+#         context['title'] = 'Eliminar Recibo'
+#         context['entity'] = 'Recibos'
+#         context['list_url'] = self.success_url
+#         return context
+
+
+# vista form Recibo
+# class ReciboFormView(FormView):
+#     form_class = ReciboForm
+#     template_name = 'SGCapp/recibos/create.html'
+#     success_url = reverse_lazy('SGCapp:ReciboListView')
+#
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#         context['title'] = 'Formulario Recibo'
+#         context['entity'] = 'Recibo'
+#         context['list_url'] = self.success_url
+#         return context
+
+
 # vista Caja--------------------------------
 class CajaListView (ListView):
     model = Caja
     template_name = 'SGCapp/cajas/list.html'
 
-    @method_decorator(login_required)
-    @method_decorator(csrf_exempt)
+    @ method_decorator(login_required)
+    @ method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
 
@@ -1394,8 +1611,8 @@ class CajaCreateView(CreateView):
     template_name = 'SGCapp/cajas/create.html'
     success_url = reverse_lazy('SGCapp:CajaListView')
 
-    @method_decorator(login_required)
-    @method_decorator(csrf_exempt)
+    @ method_decorator(login_required)
+    @ method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
 
@@ -1428,7 +1645,7 @@ class CajaUpdateView(UpdateView):
     template_name = 'SGCapp/cajas/create.html'
     success_url = reverse_lazy('SGCapp:CajaListView')
 
-    @method_decorator(login_required)
+    @ method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
         self.object = self.get_object()
         return super().dispatch(request, *args, **kwargs)
@@ -1463,8 +1680,8 @@ class CajaDeleteView(DeleteView):
     template_name = 'SGCapp/cajas/delete.html'
     success_url = reverse_lazy('SGCapp:CajaListView')
 
-    @method_decorator(login_required)
-    @method_decorator(csrf_exempt)
+    @ method_decorator(login_required)
+    @ method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
         self.object = self.get_object()
         return super().dispatch(request, *args, **kwargs)
@@ -1493,8 +1710,8 @@ class PlanillaListView (ListView):
     model = Planilla
     template_name = 'SGCapp/planillas/list.html'
 
-    @method_decorator(login_required)
-    @method_decorator(csrf_exempt)
+    @ method_decorator(login_required)
+    @ method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
 
@@ -1558,8 +1775,8 @@ class PlanillaCreateView(CreateView):
     template_name = 'SGCapp/planillas/create.html'
     success_url = reverse_lazy('SGCapp:PlanillaListView')
 
-    @method_decorator(login_required)
-    @method_decorator(csrf_exempt)
+    @ method_decorator(login_required)
+    @ method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
 
@@ -1605,7 +1822,7 @@ class PlanillaUpdateView(UpdateView):
     template_name = 'SGCapp/planillas/create.html'
     success_url = reverse_lazy('SGCapp:PlanillaListView')
 
-    @method_decorator(login_required)
+    @ method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
         self.object = self.get_object()
         return super().dispatch(request, *args, **kwargs)
@@ -1640,8 +1857,8 @@ class PlanillaDeleteView(DeleteView):
     template_name = 'SGCapp/planillas/delete.html'
     success_url = reverse_lazy('SGCapp:PlanillaListView')
 
-    @method_decorator(login_required)
-    @method_decorator(csrf_exempt)
+    @ method_decorator(login_required)
+    @ method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
         self.object = self.get_object()
         return super().dispatch(request, *args, **kwargs)

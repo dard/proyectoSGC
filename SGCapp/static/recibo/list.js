@@ -15,14 +15,14 @@ $(function () {
 
         columns: [
             {"data": "id"},
+            {"data": "recibo_cliente"},
             {"data": "recibo_planilla"},
             {"data": "recibo_caja"},
-            {"data": "recibo_cliente"},
-            {"data": "monto"},
             {"data": "fecha"},
             {"data": "estado"},
             {"data": "comprobantes"},
             {"data": "cheque"},
+            {"data": "monto"},
             {"data": "opciones"},
         ],
 

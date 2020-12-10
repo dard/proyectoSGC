@@ -1,3 +1,4 @@
+from datetime import datetime
 from django.db import models
 from django.forms import model_to_dict
 from SGC.settings import MEDIA_URL, STATIC_URL
@@ -97,7 +98,7 @@ class Planilla (models.Model):
         (ESTADO_ABIERTO, 'Abierta'),
         (ESTADO_CERRADO, 'Cerrada')
     )
-    planilla_caja = models.ForeignKey(Caja, on_delete=models.CASCADE, verbose_name='Caja id')
+    planilla_caja = models.ForeignKey(Caja, on_delete=models.CASCADE, verbose_name='Caja')
     planilla_cobrador = models.ForeignKey(
         Cobrador, on_delete=models.CASCADE, verbose_name='Cobrador id')
     estado = models.CharField(max_length=1, choices=ESTADO_OPCIONES)
@@ -124,7 +125,7 @@ class Planilla (models.Model):
         ordering = ['id']
 
 
-class Banco (BaseModel):
+class Banco(BaseModel):
     nombre = models.CharField(max_length=50, verbose_name='Nombre')
 
     def __str__(self):
@@ -134,15 +135,16 @@ class Banco (BaseModel):
         item = model_to_dict(self)
         return item
 
-    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
-        user = get_current_user()
-        if user is not None:
-            if not self.pk:
-                self.user_creation = user
-            else:
-                self.user_update = user
-
-        super(Banco, self).save()
+    # audito quien hace cambios en el modelo
+    # def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+    #     user = get_current_user()
+    #     if user is not None:
+    #         if not self.pk:
+    #             self.user_creation = user
+    #         else:
+    #             self.user_update = user
+    #
+    #     super(Banco, self).save()
 
     class Meta:
         verbose_name = 'Banco'
@@ -150,13 +152,12 @@ class Banco (BaseModel):
         ordering = ['id']
 
 
-class Cheque (models.Model):
+class Cheque(models.Model):
     cheque_banco = models.ForeignKey(
         Banco, on_delete=models.CASCADE, verbose_name='Banco')
+    fecha = models.DateField(auto_now_add=True, verbose_name='Fecha')
     # cheque_recibo = models.ForeignKey(
     #     Recibo, on_delete=models.CASCADE, verbose_name='Recibo', null=True, blank=True)
-    numero = models.DecimalField(max_digits=10, decimal_places=0,
-                                 unique=True, verbose_name='Numero Cheque')
     monto = models.DecimalField(max_digits=8, decimal_places=2, verbose_name='Monto')
     imagen = models.ImageField(upload_to='cheque/%Y/%m/%d', null=True, blank=True)
 
@@ -168,11 +169,14 @@ class Cheque (models.Model):
 
     def toJSON(self):
         item = model_to_dict(self)
+        item['fecha'] = self.fecha.strftime('%y-%m-%d')
+        item['cheque_banco'] = self.cheque_banco.toJSON()
+        item['monto'] = format(self.monto, '.2f')
         item['imagen'] = self.get_imagen()  # Parseo el campo imagen
         return item
 
     def __str__(self):
-        return '{} {} {} {}'.format(self.cheque_banco, self.numero, self.monto, self.imagen)
+        return '{} {} {} {}'.format(self.cheque_banco, self.fecha, self.monto, self.imagen)
 
     class Meta:
         verbose_name = 'Cheque'
@@ -185,18 +189,17 @@ class Comprobante (models.Model):
         Cliente, on_delete=models.CASCADE, verbose_name='Cliente')
     fecha_comprobante = models.DateField(auto_now_add=True, verbose_name='Fecha')
     monto = models.DecimalField(max_digits=8, decimal_places=2, verbose_name='Monto')
-    # monto_cancelado = models.DecimalField(
-    #     max_digits=8, decimal_places=2, verbose_name='Monto Cancelado')
 
     class Meta:
         ordering = ['id']
 
     def toJSON(self):
         # model_to_dict devuelve un diccionario del modelo
-        # proiedad exclude para excluir datos (self, exclude=['campoFecha']
+        # propiedad exclude para excluir datos (self, exclude=['campoFecha']
         item = model_to_dict(self)
         # parseo el campo fecha
         item['fecha_comprobante'] = self.fecha_comprobante.strftime('%y-%m-%d')
+        item['monto'] = format(self.monto, '.2f')
         return item
 
     def __str__(self):
@@ -211,33 +214,56 @@ class Recibo(models.Model):
         (ESTADO_ABIERTO, 'Abierta'),
         (ESTADO_CERRADO, 'Cerrada')
     )
-
-    recibo_planilla = models.ForeignKey(
-        Planilla, on_delete=models.CASCADE, null=True, blank=True, verbose_name='Nro Planilla')
-    recibo_caja = models.ForeignKey(Caja, on_delete=models.CASCADE,
-                                    null=True, blank=True, verbose_name='Nro Caja')
+    fecha = models.DateField(default=datetime.now, verbose_name='Fecha')
     recibo_cliente = models.ForeignKey(
         Cliente, on_delete=models.CASCADE, null=True, blank=True, verbose_name='Cliente DNI')
-    monto = models.DecimalField(max_digits=8, decimal_places=2, verbose_name='Monto')
-    fecha = models.DateField(auto_now_add=True, verbose_name='Fecha')
+    recibo_planilla = models.ForeignKey(
+        Planilla, on_delete=models.CASCADE, null=True, blank=True, verbose_name='Planilla')
+    recibo_caja = models.ForeignKey(Caja, on_delete=models.CASCADE,
+                                    null=True, blank=True, verbose_name='Caja')
     estado = models.CharField(max_length=1, choices=ESTADO_OPCIONES)
     comprobantes = models.ForeignKey(
-        Comprobante, on_delete=models.CASCADE, null=True, blank=True, verbose_name='Comprobantes Cancelados')
-    # monto_comprobantes = models.DecimalField(
-    #     max_digits=8, decimal_places=2, verbose_name='Monto Comprobantes')
+        Comprobante, on_delete=models.CASCADE, null=True, blank=True,
+        verbose_name='Comprobantes')
     cheque = models.ForeignKey(Cheque, on_delete=models.CASCADE, null=True,
-                               blank=True, verbose_name='Nro Cheque')
+                               blank=True, verbose_name='Cheque')
+    efectivo = models.DecimalField(default=0.0, max_digits=8,
+                                   decimal_places=2, verbose_name='Efectivo')
+    subtotalComp = models.DecimalField(default=0.0, max_digits=8,
+                                       decimal_places=2, verbose_name='Subtotal Comprobantes')
+    subtotalCheq = models.DecimalField(default=0.0, max_digits=8,
+                                       decimal_places=2, verbose_name='Subtotal Cheques')
+    total = models.DecimalField(default=0.00, max_digits=8, decimal_places=2, verbose_name='Total')
 
     def toJSON(self):
         item = model_to_dict(self)
+        # try:
+        item['recibo_cliente'] = self.recibo_cliente.toJSON()
+        # except:
+        #     pass
+        item['subtotalComp'] = format(self.subtotalComp, '.2f')
+        item['subtotalCheq'] = format(self.subtotalCheq, '.2f')
         if item['estado'] == 'C':
             item['fecha'] = self.fecha.strftime('%y-%m-%d')
         else:
             item['fecha'] = None
+        # item['det'] = [i.toJSON() for i in self.Comprobantes.all()]
+
         return item
 
     def __str__(self):
-        return '{} {} {} {} {} {} {}'.format(self.recibo_caja, self.recibo_cliente, self.monto, self.fecha, self.estado, self.comprobantes, self.cheque)
+        return '{} {} {} {} {} {} {} {} {} {} {} {}'.format(self.recibo_caja,
+                                                            self.fecha,
+                                                            self.recibo_cliente,
+                                                            self.efectivo,
+                                                            self.comprobantes,
+                                                            self.subtotalComp,
+                                                            self.cheque,
+                                                            self.subtotalCheq,
+                                                            self.total,
+                                                            self.estado,
+                                                            self.comprobantes,
+                                                            self.cheque)
 
     class Meta:
         verbose_name = 'Recibo'
@@ -260,7 +286,8 @@ class ComprobanteGenerado (models.Model):
         return item
 
     def __str__(self):
-        return '{} {} {}'.format(self.comprobante_recibo, self.comprobante_generado, self.monto)
+        return '{} {} {}'.format(self.comprobante_recibo,
+                                 self.comprobante_generado, self.monto)
 
 
 class Anticipo (models.Model):
